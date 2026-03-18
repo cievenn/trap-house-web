@@ -11,15 +11,18 @@ export default function Home() {
   // ==========================================================================
   // INERTIE GLOBALE (La physique du site)
   // ==========================================================================
-  // On configure un "ressort" qui va donner ce fameux effet de momentum (Scroll Inertia)
   const springConfig = { stiffness: 70, damping: 20, mass: 0.2 };
 
   // 1. PROGRESS SCROLL (Barre globale avec inertie)
   const { scrollYProgress: globalScroll } = useScroll();
   const smoothGlobalScroll = useSpring(globalScroll, springConfig);
 
+  // 🔥 NOUVEAU : FLOU DYNAMIQUE AU SCROLL
+  // Transforme la progression du scroll (0 à 1) en opacité (0 à 1)
+  const backgroundBlurOpacity = useTransform(smoothGlobalScroll, [0, 1], [0, 1]);
+
   // ==========================================================================
-  // SECTION 1 : STORYTELLING (Rapide & Dynamique)
+  // SECTION 1 : STORYTELLING
   // ==========================================================================
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: heroScroll } = useScroll({
@@ -27,10 +30,8 @@ export default function Home() {
     offset: ["start start", "end start"],
   });
   
-  // On applique l'inertie sur le scroll du Hero
   const smoothHeroScroll = useSpring(heroScroll, springConfig);
 
-  // TIMING DYNAMIQUE (Se chevauchent pour plus de rapidité)
   const logoOpacity = useTransform(smoothHeroScroll, [0, 0.2], [1, 0]);
   
   const text1Opacity = useTransform(smoothHeroScroll, [0.15, 0.35, 0.5], [0, 1, 0]);
@@ -43,7 +44,7 @@ export default function Home() {
   const text3Y = useTransform(smoothHeroScroll, [0.75, 0.95], [40, 0]);
 
   // ==========================================================================
-  // SECTION 2 : FAKE HORIZONTAL SCROLL (Avec Inertie)
+  // SECTION 2 : FAKE HORIZONTAL SCROLL
   // ==========================================================================
   const horizontalRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: horizontalScroll } = useScroll({
@@ -51,10 +52,8 @@ export default function Home() {
     offset: ["start start", "end end"],
   });
   
-  // Inertie appliquée au glissement horizontal
   const smoothHorizontalScroll = useSpring(horizontalScroll, { stiffness: 60, damping: 20, mass: 0.1 });
   
-  // Déplacement horizontal plus nerveux
   const xTransform = useTransform(smoothHorizontalScroll, [0, 1], ["0%", "-70%"]);
   const bgTextX = useTransform(smoothHorizontalScroll, [0, 1], ["0%", "15%"]);
 
@@ -68,32 +67,48 @@ export default function Home() {
         style={{ scaleX: smoothGlobalScroll, width: "100%" }}
       />
 
-      {/* 🌪️ FUMÉE CONSTANTE EN BACKGROUND */}
-      <video autoPlay loop muted playsInline className="fixed top-0 left-0 w-full h-full object-cover opacity-40 mix-blend-screen pointer-events-none z-0">
+      {/* 🌪️ FUMÉE CONSTANTE EN BACKGROUND (Visible partout) */}
+      <video autoPlay loop muted playsInline className="fixed top-0 left-0 w-full h-full object-cover opacity-60 mix-blend-screen pointer-events-none z-0">
         <source src="/assets/smoke.mp4" type="video/mp4" />
       </video>
 
+      {/* 🔥 CALQUE DE FLOU DYNAMIQUE */}
+      {/* Ce calque est fixe. Au début (opacity: 0) on voit la fumée nette. 
+          En descendant (opacity -> 1), il ajoute un flou massif et assombrit légèrement l'arrière-plan */}
+      <motion.div
+        className="fixed inset-0 z-[1] pointer-events-none backdrop-blur-3xl bg-black/40"
+        style={{ opacity: backgroundBlurOpacity }}
+      />
+
+      {/* Tout le contenu principal est par-dessus la vidéo et le flou (z-10) */}
       <main className="relative z-10 w-full flex flex-col selection:bg-[#00F2FF] selection:text-black">
         
         {/* NAVBAR */}
         <motion.nav initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.5 }} className="fixed top-0 left-0 w-full z-[100] flex justify-center py-8 px-4 pointer-events-none">
           <div className="pointer-events-auto flex gap-6 md:gap-12 px-8 md:px-12 py-4 rounded-full border border-white/5 bg-black/20 backdrop-blur-2xl shadow-2xl">
             {["Vision", "Vitrine", "Réseaux", "VIP"].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="interactive-element relative text-[9px] md:text-xs font-syne font-bold tracking-[0.3em] text-white/50 hover:text-[#00F2FF] transition-colors uppercase">
+              <a 
+                key={item} 
+                href={`#${item.toLowerCase()}`} 
+                onClick={(e) => {
+                  e.preventDefault();
+                  const target = document.getElementById(item.toLowerCase());
+                  if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="interactive-element relative text-[9px] md:text-xs font-syne font-bold tracking-[0.3em] text-white/50 hover:text-[#00F2FF] transition-colors uppercase"
+              >
                 {item}
               </a>
             ))}
           </div>
         </motion.nav>
 
-        {/* =========================================================
-            SECTION 1 : SCROLL-BASED STORYTELLING (Hauteur réduite : 250vh)
-        ========================================================= */}
+        {/* SECTION 1 : SCROLL-BASED STORYTELLING */}
         <section id="vision" ref={heroRef} className="relative w-full h-[250vh]">
-          {/* Le conteneur reste collé à l'écran */}
-          <div className="sticky top-0 w-full h-screen flex flex-col items-center justify-center overflow-hidden px-6">
+          <div className="sticky top-0 w-full h-[100dvh] flex flex-col items-center justify-center overflow-hidden px-6">
             
-            {/* SCENE 1 : LE LOGO */}
             <motion.div style={{ opacity: logoOpacity }} className="absolute flex flex-col items-center">
               <img src="/assets/traphouse.png" alt="Trap House" className="w-40 md:w-64 drop-shadow-[0_0_30px_rgba(0,242,255,0.2)] mb-8" />
               <h1 className="text-5xl md:text-7xl font-black font-syne tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-white to-white/30 text-glow text-center">
@@ -105,7 +120,6 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* SCENE 2 : L'ACCROCHE */}
             <motion.div style={{ opacity: text1Opacity, y: text1Y }} className="absolute max-w-3xl text-center pointer-events-none">
               <p className="font-syne text-[#00F2FF] text-xs tracking-[0.4em] font-bold uppercase mb-4">Chapitre I</p>
               <h2 className="text-4xl md:text-6xl font-black font-syne uppercase tracking-widest text-white leading-tight">
@@ -113,7 +127,6 @@ export default function Home() {
               </h2>
             </motion.div>
 
-            {/* SCENE 3 : LA PROMESSE */}
             <motion.div style={{ opacity: text2Opacity, y: text2Y }} className="absolute max-w-4xl text-center pointer-events-none">
               <p className="font-syne text-[#00F2FF] text-xs tracking-[0.4em] font-bold uppercase mb-4">Chapitre II</p>
               <h2 className="text-4xl md:text-6xl font-black font-syne uppercase tracking-widest text-white leading-tight">
@@ -121,10 +134,9 @@ export default function Home() {
               </h2>
             </motion.div>
 
-            {/* SCENE 4 : LA CONCLUSION */}
             <motion.div style={{ opacity: text3Opacity, y: text3Y }} className="absolute max-w-3xl text-center flex flex-col items-center pointer-events-none">
               <div className="w-[1px] h-20 bg-gradient-to-b from-[#00F2FF] to-transparent mb-8" />
-              <p className="font-manrope text-white/70 text-lg md:text-xl leading-relaxed font-light">
+              <p className="font-manrope text-white/70 text-lg md:text-xl leading-relaxed font-light drop-shadow-xl">
                 Nous créons plus que des soirées : nous concevons des moments d'exclusivité où la lumière fend l'obscurité, et où l'accès est un privilège absolu.
               </p>
             </motion.div>
@@ -132,21 +144,16 @@ export default function Home() {
           </div>
         </section>
 
-        {/* =========================================================
-            SECTION 2 : FAKE HORIZONTAL SCROLL (Hauteur réduite : 300vw)
-        ========================================================= */}
-        <section id="vitrine" ref={horizontalRef} className="relative w-full h-[300vw] bg-black">
-          <div className="sticky top-0 w-full h-screen overflow-hidden flex items-center">
+        {/* SECTION 2 : FAKE HORIZONTAL SCROLL (Fond transparent pour voir la fumée floue) */}
+        <section id="vitrine" ref={horizontalRef} className="relative w-full h-[300vw] bg-transparent">
+          <div className="sticky top-0 w-full h-[100dvh] overflow-hidden flex items-center">
             
-            {/* Grand texte en background (Parallax inverse) */}
             <motion.div style={{ x: bgTextX }} className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap opacity-5 pointer-events-none">
               <h2 className="text-[15rem] md:text-[25rem] font-black font-syne uppercase text-white">ARCHIVES</h2>
             </motion.div>
 
-            {/* Le container qui se déplace horizontalement avec INERTIE */}
             <motion.div style={{ x: xTransform }} className="flex h-full items-center relative z-10 px-[10vw]">
               
-              {/* Écran 1 : Titre de la section */}
               <div className="w-[90vw] md:w-[60vw] flex flex-col justify-center shrink-0 pr-10 md:pr-20">
                 <span className="font-syne text-[#00F2FF] text-[10px] tracking-[0.4em] font-bold mb-4 uppercase">Exploration</span>
                 <h2 className="text-5xl md:text-7xl font-black font-syne uppercase tracking-widest text-white">
@@ -157,11 +164,10 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Les images de la vitrine alignées horizontalement */}
               {VITRINE_IMAGES.map((src, i) => (
                 <div key={i} className="w-[75vw] md:w-[35vw] h-[55vh] shrink-0 mr-8 md:mr-16 relative group interactive-element">
-                  <div className="w-full h-full rounded-2xl overflow-hidden border border-white/10 bg-black/50 backdrop-blur-md relative shadow-2xl">
-                    <img src={src} alt={`Vitrine ${i}`} className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-105" />
+                  <div className="w-full h-full rounded-2xl overflow-hidden border border-white/10 bg-black/30 backdrop-blur-sm relative shadow-2xl">
+                    <img src={src} alt={`Vitrine ${i}`} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
                     
                     <div className="absolute bottom-8 left-8">
@@ -172,16 +178,14 @@ export default function Home() {
                 </div>
               ))}
 
-              <div className="w-[30vw] shrink-0" /> {/* Espace de fin */}
+              <div className="w-[30vw] shrink-0" />
             </motion.div>
           </div>
         </section>
 
-        {/* =========================================================
-            SECTION 3 : RÉSEAUX SOCIAUX
-        ========================================================= */}
-        <section id="réseaux" className="w-full overflow-hidden bg-[#020202] py-24 md:py-32 border-y border-white/5 relative z-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-black to-transparent opacity-80" />
+        {/* SECTION 3 : RÉSEAUX SOCIAUX */}
+        <section id="réseaux" className="w-full overflow-hidden bg-black/10 py-24 md:py-32 border-y border-white/5 relative z-20">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-transparent opacity-80" />
           <motion.div 
             initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
             className="flex whitespace-nowrap gap-16 items-center relative z-10"
@@ -189,9 +193,9 @@ export default function Home() {
             transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
           >
             {Array(6).fill([
-              <span key="1" className="text-white/20 hover:text-[#00F2FF] transition-colors">REJOIGNEZ LE CERCLE</span>, 
+              <span key="1" className="text-white/30 hover:text-[#00F2FF] transition-colors">REJOIGNEZ LE CERCLE</span>, 
               <Instagram key="ig" size={30} className="text-[#00F2FF]"/>, 
-              <span key="2" className="text-white/20 hover:text-[#00F2FF] transition-colors">@TRAPHOUSE_EVENT</span>, 
+              <span key="2" className="text-white/30 hover:text-[#00F2FF] transition-colors">@TRAPHOUSE_EVENT</span>, 
               <Disc key="tk" size={30} className="text-[#00F2FF]"/>, 
             ]).flat().map((item, i) => (
               <span key={i} className="interactive-element text-4xl md:text-6xl font-black font-syne uppercase tracking-[0.2em] flex items-center gap-16 cursor-pointer">
@@ -201,29 +205,28 @@ export default function Home() {
           </motion.div>
         </section>
 
-        {/* =========================================================
-            SECTION 4 : SHOP & RÉSERVATIONS (VIP)
-        ========================================================= */}
-        <section id="vip" className="relative w-full py-32 md:py-48 px-6 bg-black/80 backdrop-blur-2xl">
+        {/* SECTION 4 : SHOP & RÉSERVATIONS (VIP) */}
+        {/* Transparent pour laisser passer la fumée floutée */}
+        <section id="vip" className="relative w-full py-32 md:py-48 px-6 bg-transparent">
           <div className="max-w-7xl mx-auto">
             
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-24 text-center flex flex-col items-center">
               <Lock className="w-8 h-8 text-[#00F2FF] mb-6 drop-shadow-[0_0_10px_#00F2FF]" />
-              <h2 className="text-3xl md:text-5xl font-black font-syne uppercase tracking-widest text-white mb-4">
-                Zone <span className="text-white/30">Privilège</span>
+              <h2 className="text-3xl md:text-5xl font-black font-syne uppercase tracking-widest text-white mb-4 drop-shadow-lg">
+                Zone <span className="text-white/50">Privilège</span>
               </h2>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
               
               {/* TRAP HOUSE SHOP */}
-              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-3xl border border-white/5 overflow-hidden group bg-[#050505] shadow-2xl">
+              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-3xl border border-white/5 overflow-hidden group bg-black/40 shadow-2xl backdrop-blur-sm">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#00F2FF]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <div className="relative z-20 flex flex-col items-center p-8 text-center">
                   <h3 className="text-3xl md:text-5xl font-black font-syne text-white tracking-widest mb-4">
                     TRAP HOUSE <br/><span className="text-white/20">SHOP</span>
                   </h3>
-                  <p className="font-manrope text-white/40 text-sm mb-12 max-w-xs">Merchandising exclusif. Le style de la nuit, réservé à nos membres.</p>
+                  <p className="font-manrope text-white/50 text-sm mb-12 max-w-xs">Merchandising exclusif. Le style de la nuit, réservé à nos membres.</p>
                   <div className="px-8 py-4 rounded-full bg-black/50 border border-white/10 group-hover:border-[#00F2FF] transition-all duration-300">
                     <p className="text-white/50 group-hover:text-[#00F2FF] font-syne text-[10px] tracking-[0.4em] font-bold uppercase transition-colors">Coming Soon</p>
                   </div>
@@ -231,13 +234,13 @@ export default function Home() {
               </motion.div>
 
               {/* RÉSERVATIONS VIP */}
-              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-3xl border border-white/5 overflow-hidden group bg-[#050505] shadow-2xl">
+              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-3xl border border-white/5 overflow-hidden group bg-black/40 shadow-2xl backdrop-blur-sm">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#00F2FF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <div className="relative z-20 flex flex-col items-center p-8 text-center">
                   <h3 className="text-3xl md:text-5xl font-black font-syne text-white tracking-widest mb-4">
                     RÉSERVATIONS <br/><span className="text-[#00F2FF] text-glow">VIP</span>
                   </h3>
-                  <p className="font-manrope text-white/40 text-sm mb-12 max-w-xs">Garantissez votre table, accédez aux zones privées et profitez d'un service premium.</p>
+                  <p className="font-manrope text-white/50 text-sm mb-12 max-w-xs">Garantissez votre table, accédez aux zones privées et profitez d'un service premium.</p>
                   <div className="px-8 py-4 rounded-full bg-black/50 border border-white/10 group-hover:border-[#00F2FF] transition-all duration-300">
                     <p className="text-white/50 group-hover:text-[#00F2FF] font-syne text-[10px] tracking-[0.4em] font-bold uppercase transition-colors">Coming Soon</p>
                   </div>
@@ -249,9 +252,9 @@ export default function Home() {
         </section>
 
         {/* FOOTER */}
-        <footer className="relative w-full py-16 flex flex-col items-center bg-[#020202] border-t border-white/5 z-10">
+        <footer className="relative w-full py-16 flex flex-col items-center bg-black/30 border-t border-white/5 z-10">
           <h2 className="font-syne font-black tracking-[0.5em] text-xl md:text-2xl text-white/30 mb-8 text-glow">TRAP HOUSE</h2>
-          <p className="text-white/20 text-[8px] md:text-[10px] font-syne uppercase tracking-[0.3em] text-center px-4">
+          <p className="text-white/20 text-[8px] md:text-[10px] font-syne uppercase tracking-[0.3em] text-center px-4 drop-shadow-md">
             © {new Date().getFullYear()} TRAP HOUSE EVENT. TOUS DROITS RÉSERVÉS.
           </p>
         </footer>
