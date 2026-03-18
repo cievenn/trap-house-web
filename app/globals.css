@@ -1,26 +1,133 @@
-@import "tailwindcss";
+/* Fichier : app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Syne:wght@400;600;700;800&display=swap');
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background-color: #020202;
+  }
+  
+  body {
+    background-color: #020202;
+    color: white;
+    font-family: 'Manrope', sans-serif;
+    cursor: none; 
+    overflow-x: hidden;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.font-syne { font-family: 'Syne', sans-serif; }
+.font-manrope { font-family: 'Manrope', sans-serif; }
+
+/* Noise & Grain */
+.noise-bg {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  animation: noise 1s steps(2) infinite;
 }
+
+@keyframes noise {
+  0%, 100% { background-position: 0 0; }
+  10% { background-position: -5% -10%; }
+  20% { background-position: -15% 5%; }
+  30% { background-position: 7% -25%; }
+  40% { background-position: 20% 25%; }
+  50% { background-position: -25% 10%; }
+  60% { background-position: 15% 5%; }
+  70% { background-position: 0% 15%; }
+  80% { background-position: 25% 35%; }
+  90% { background-position: -10% 10%; }
+}
+
+/* Cyber Grid */
+.cyber-grid {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  mask-image: linear-gradient(to bottom, transparent, black, transparent);
+}
+
+/* Smoke Glow Animation */
+@keyframes etherealPulse {
+  0% { transform: scale(1) translate(0, 0); opacity: 0.15; filter: blur(80px); }
+  50% { transform: scale(1.1) translate(2%, -2%); opacity: 0.25; filter: blur(100px); }
+  100% { transform: scale(1) translate(0, 0); opacity: 0.15; filter: blur(80px); }
+}
+
+.ethereal-glow-1 {
+  position: absolute;
+  width: 80vw; height: 80vh;
+  background: radial-gradient(circle, rgba(0,242,255,0.4) 0%, transparent 60%);
+  top: -20%; left: -20%;
+  animation: etherealPulse 15s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ethereal-glow-2 {
+  position: absolute;
+  width: 60vw; height: 60vh;
+  background: radial-gradient(circle, rgba(10,17,40,0.8) 0%, transparent 60%);
+  bottom: -10%; right: -10%;
+  animation: etherealPulse 20s ease-in-out infinite alternate-reverse;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.text-glow { text-shadow: 0 0 30px rgba(0, 242, 255, 0.5); }
+
+/* Glitch Text */
+.glitch-text { position: relative; }
+.glitch-text::before, .glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0.8;
+}
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -1px 0 red;
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -1px 0 blue;
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(15px, 9999px, 71px, 0); }
+  20% { clip: rect(69px, 9999px, 81px, 0); }
+  40% { clip: rect(10px, 9999px, 18px, 0); }
+  60% { clip: rect(89px, 9999px, 32px, 0); }
+  80% { clip: rect(45px, 9999px, 11px, 0); }
+  100% { clip: rect(32px, 9999px, 98px, 0); }
+}
+@keyframes glitch-anim-2 {
+  0% { clip: rect(65px, 9999px, 100px, 0); }
+  20% { clip: rect(3px, 9999px, 20px, 0); }
+  40% { clip: rect(80px, 9999px, 35px, 0); }
+  60% { clip: rect(20px, 9999px, 60px, 0); }
+  80% { clip: rect(95px, 9999px, 15px, 0); }
+  100% { clip: rect(10px, 9999px, 85px, 0); }
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(450px); opacity: 0; }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #020202; }
+::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 0px; }
+::-webkit-scrollbar-thumb:hover { background: #00F2FF; }
