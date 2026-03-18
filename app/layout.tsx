@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SmoothScroll } from "@/components/SmoothScroll";
-import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "TRAP HOUSE | Elite Nightlife",
@@ -15,11 +13,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className="bg-[#050505] text-white antialiased selection:bg-[#00F2FF] selection:text-black">
-        <SmoothScroll>
-          <Navbar />
-          {children}
-        </SmoothScroll>
+      <body className="antialiased">
+        {children}
       </body>
     </html>
   );

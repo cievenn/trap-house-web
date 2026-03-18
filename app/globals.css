@@ -1,18 +1,19 @@
-/* Fichier : app/globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600&family=Syne:wght@400;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-traphouse-black: #020202;
+  --color-traphouse-neon: #00F2FF;
+}
 
 @layer base {
   html {
     scroll-behavior: smooth;
-    background-color: #020202;
+    background-color: var(--color-traphouse-black);
   }
   
   body {
-    background-color: #020202;
+    background-color: var(--color-traphouse-black);
     color: white;
     font-family: 'Manrope', sans-serif;
     cursor: none; 
