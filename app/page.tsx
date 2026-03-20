@@ -8,6 +8,7 @@ import { Canvas } from "@react-three/fiber";
 import { VITRINE_IMAGES } from "@/lib/data";
 import { CustomCursor } from "@/components/CustomCursor";
 import { Logo3D } from "@/components/Logo3D";
+import { SmokeBackground } from "@/components/SmokeBackground";
 
 // NAVIGATION PROPRE
 const NAV_LINKS = [
@@ -76,10 +77,8 @@ export default function Home() {
         style={{ scaleX: smoothGlobalScroll, width: "100%" }}
       />
 
-      {/* 🌪️ FUMÉE CONSTANTE EN BACKGROUND */}
-      <video autoPlay loop muted playsInline className="fixed top-0 left-0 w-full h-full object-cover opacity-60 mix-blend-screen pointer-events-none z-0">
-        <source src="/assets/smoke.mp4" type="video/mp4" />
-      </video>
+      {/* 🌪️ NOUVELLE FUMÉE 3D VOLUMÉTRIQUE */}
+      <SmokeBackground />
 
       {/* 🔥 CALQUE DE FLOU DYNAMIQUE */}
       <motion.div
