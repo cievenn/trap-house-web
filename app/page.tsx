@@ -18,13 +18,97 @@ const NAV_LINKS = [
   { name: "VIP", id: "vip" }
 ];
 
+// ==========================================================================
+// COMPOSANT : CARTE VITRINE EMPILÉE (LA MAGIE DU SCROLL)
+// ==========================================================================
+const StackedCard = ({ src, index, total, progress }: { src: string, index: number, total: number, progress: any }) => {
+  const step = 1 / total;
+  
+  // 1. ANIMATION DE SORTIE (Glisse vers la gauche)
+  const exitStart = index * step;
+  const exitEnd = exitStart + step;
+  // Sécurité anti-crash : on s'assure que la fin est toujours plus grande que le début
+  const safeExitEnd = exitEnd > exitStart ? exitEnd : exitStart + 0.01;
+
+  // La dernière carte ne s'en va pas, elle reste à l'écran pour la transition vers la suite
+  const isLast = index === total - 1;
+  const x = useTransform(progress, [exitStart, safeExitEnd], isLast ? ["0%", "0%"] : ["0%", "-120%"]);
+  const rotate = useTransform(progress, [exitStart, safeExitEnd], isLast ? ["0deg", "0deg"] : ["0deg", "-15deg"]);
+
+  // 2. ANIMATION D'ENTRÉE (Grandit et apparaît en opacité)
+  const enterStart = (index - 1) * step;
+  const enterEnd = index * step;
+  // Sécurité : on empêche les valeurs négatives qui font crasher le moteur du navigateur
+  const safeEnterStart = Math.max(0, enterStart);
+  
+  const isFirst = index === 0;
+  // La première carte est déjà là au début (on fige ses valeurs de 0 à 1)
+  const scaleRange = isFirst ? [0, 1] : [safeEnterStart, enterEnd];
+  const scaleValues = isFirst ? [1, 1] : [0.85, 1];
+  const scale = useTransform(progress, scaleRange, scaleValues);
+
+  const opacityRange = isFirst ? [0, 1] : [safeEnterStart, enterEnd];
+  const opacityValues = isFirst ? [1, 1] : [0, 1];
+  const opacity = useTransform(progress, opacityRange, opacityValues);
+
+  return (
+    <motion.div 
+      style={{ x, rotate, scale, opacity, zIndex: total - index }} 
+      className="absolute inset-0 origin-bottom-left w-full h-full p-[2px] rounded-[2rem]"
+    >
+      {/* 1. L'AURA PLASMA PERMANENTE (Pas besoin de hover) */}
+      <div className="absolute -inset-6 opacity-60 blur-2xl pointer-events-none rounded-[3rem] overflow-hidden">
+        <div 
+          className="absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0%,rgba(0,242,255,0.7)_20%,transparent_50%,rgba(138,43,226,0.7)_70%,transparent_100%)] animate-spin"
+          style={{ animationDuration: '5s' }}
+        />
+        <div 
+          className="absolute inset-[-50%] bg-[conic-gradient(from_0deg,transparent_0%,rgba(138,43,226,0.7)_20%,transparent_50%,rgba(0,242,255,0.7)_70%,transparent_100%)] animate-spin"
+          style={{ animationDuration: '8s', animationDirection: 'reverse' }}
+        />
+      </div>
+
+      {/* 2. LE CORPS DE LA CARTE (Noir, vitré, fumant) */}
+      <div className="relative w-full h-full bg-[#020202] rounded-[2rem] overflow-hidden border border-white/10 shadow-[inset_0_0_60px_rgba(0,0,0,1)] flex flex-col justify-end">
+        
+        {/* L'image de la soirée */}
+        <img 
+          src={src} 
+          alt={`Archive Trap House ${index}`} 
+          className="absolute inset-0 w-full h-full object-cover mix-blend-luminosity opacity-50 scale-105" 
+        />
+        
+        {/* LA FUMÉE INTERNE (Mouvement constant autonome) */}
+        <motion.div 
+          animate={{ y: ["0%", "-10%"], x: ["-5%", "5%"] }}
+          transition={{ repeat: Infinity, duration: 8, ease: "linear", repeatType: "reverse" }}
+          className="absolute inset-0 opacity-40 mix-blend-screen pointer-events-none"
+          style={{ backgroundImage: "url('/assets/smoke.png')", backgroundSize: "cover", backgroundPosition: "center" }}
+        />
+
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+
+        {/* TEXTE */}
+        <div className="relative z-20 p-8 md:p-10">
+          <p className="font-syne font-bold tracking-[0.4em] text-[#00F2FF] text-[10px] uppercase mb-3 drop-shadow-[0_0_10px_rgba(0,242,255,0.8)] flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-[#00F2FF] shadow-[0_0_8px_#00F2FF] animate-pulse" />
+            Dossier Classé
+          </p>
+          <h3 className="font-syne font-black text-white text-4xl md:text-5xl tracking-[0.2em] uppercase drop-shadow-2xl">
+            VOL. 0{index + 1}
+          </h3>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+
 export default function Home() {
-  // ==========================================================================
-  // INERTIE GLOBALE (La physique du site)
-  // ==========================================================================
   const springConfig = { stiffness: 70, damping: 20, mass: 0.2 };
 
-  // 1. PROGRESS SCROLL (Barre globale avec inertie)
+  // 1. PROGRESS SCROLL
   const { scrollYProgress: globalScroll } = useScroll();
   const smoothGlobalScroll = useSpring(globalScroll, springConfig);
 
@@ -54,18 +138,13 @@ export default function Home() {
   const text3Y = useTransform(smoothHeroScroll, [0.75, 0.95], [40, 0]);
 
   // ==========================================================================
-  // SECTION 2 : FAKE HORIZONTAL SCROLL
+  // SECTION 2 : VITRINE (DECK OF CARDS SCROLL)
   // ==========================================================================
-  const horizontalRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: horizontalScroll } = useScroll({
-    target: horizontalRef,
+  const vitrineRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: vitrineScroll } = useScroll({
+    target: vitrineRef,
     offset: ["start start", "end end"],
   });
-  
-  const smoothHorizontalScroll = useSpring(horizontalScroll, { stiffness: 60, damping: 20, mass: 0.1 });
-  
-  const xTransform = useTransform(smoothHorizontalScroll, [0, 1], ["0%", "-70%"]);
-  const bgTextX = useTransform(smoothHorizontalScroll, [0, 1], ["0%", "15%"]);
 
   return (
     <div className="w-full relative bg-black">
@@ -77,7 +156,7 @@ export default function Home() {
         style={{ scaleX: smoothGlobalScroll, width: "100%" }}
       />
 
-      {/* 🌪️ NOUVELLE FUMÉE 3D VOLUMÉTRIQUE */}
+      {/* 🌪️ FUMÉE 3D VOLUMÉTRIQUE */}
       <SmokeBackground />
 
       {/* 🔥 CALQUE DE FLOU DYNAMIQUE */}
@@ -86,7 +165,6 @@ export default function Home() {
         style={{ opacity: backgroundBlurOpacity }}
       />
 
-      {/* Tout le contenu principal est par-dessus la vidéo et le flou (z-10) */}
       <main className="relative z-10 w-full flex flex-col selection:bg-[#00F2FF] selection:text-black">
         
         {/* NAVBAR */}
@@ -98,10 +176,7 @@ export default function Home() {
                 href={`#${item.id}`} 
                 onClick={(e) => {
                   e.preventDefault();
-                  const target = document.getElementById(item.id);
-                  if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
-                  }
+                  document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
                 }}
                 className="interactive-element relative text-[9px] md:text-xs font-syne font-bold tracking-[0.3em] text-white/50 hover:text-[#00F2FF] transition-colors uppercase"
               >
@@ -116,13 +191,9 @@ export default function Home() {
           <div className="sticky top-0 w-full h-[100dvh] flex flex-col items-center justify-center overflow-hidden px-6">
             
             <motion.div style={{ opacity: logoOpacity }} className="absolute inset-0 z-20 pointer-events-none">
-              
-              {/* LE CANVAS PLEIN ÉCRAN */}
               <div className="absolute inset-0 pointer-events-auto cursor-grab active:cursor-grabbing">
-                {/* 💥 MODIFICATION ICI : Caméra reculée (Z=9) pour réduire la taille globale 💥 */}
                 <Canvas camera={{ position: [0, 0, 9], fov: 45 }} dpr={[1, 2]}>
                   <Suspense fallback={null}>
-                    {/* 💥 MODIFICATION ICI : Position Y=-1 pour baisser le logo au centre exact de l'espace dispo et Scale=0.85 pour ajuster 💥 */}
                     <group position={[0, -1, 0]} scale={0.85}>
                       <Logo3D />
                     </group>
@@ -136,7 +207,6 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* TEXTES STORYTELLING */}
             <motion.div style={{ opacity: text1Opacity, y: text1Y }} className="absolute max-w-3xl text-center pointer-events-none z-30">
               <p className="font-syne text-[#00F2FF] text-xs tracking-[0.4em] font-bold uppercase mb-4">Chapitre I</p>
               <h2 className="text-4xl md:text-6xl font-black font-syne uppercase tracking-widest text-white leading-tight drop-shadow-md">
@@ -161,42 +231,43 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SECTION 2 : FAKE HORIZONTAL SCROLL */}
-        <section id="vitrine" ref={horizontalRef} className="relative w-full h-[300vw] bg-transparent">
-          <div className="sticky top-0 w-full h-[100dvh] overflow-hidden flex items-center">
+        {/* =========================================================
+            SECTION 2 : LA VITRINE (DECK OF CARDS SCROLL)
+        ========================================================= */}
+        {/* La hauteur dépend du nombre d'images pour avoir le temps de toutes les scroller */}
+        <section 
+          id="vitrine" 
+          ref={vitrineRef} 
+          className="relative w-full bg-transparent z-20"
+          style={{ height: `${VITRINE_IMAGES.length * 100}vh` }}
+        >
+          <div className="sticky top-0 w-full h-[100dvh] flex flex-col md:flex-row items-center justify-center md:justify-between px-6 md:px-[10vw] overflow-hidden">
             
-            <motion.div style={{ x: bgTextX }} className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap opacity-5 pointer-events-none">
-              <h2 className="text-[15rem] md:text-[25rem] font-black font-syne uppercase text-white">ARCHIVES</h2>
-            </motion.div>
+            {/* PARTIE GAUCHE : TEXTE (Au premier plan) */}
+            <div className="w-full md:w-1/3 flex flex-col justify-center mb-10 md:mb-0 z-30 pointer-events-none">
+              <span className="font-syne text-[#00F2FF] text-[10px] tracking-[0.4em] font-bold mb-4 uppercase drop-shadow-[0_0_10px_#00F2FF]">Exploration</span>
+              <h2 className="text-5xl md:text-7xl lg:text-8xl font-black font-syne uppercase tracking-widest text-white leading-none mb-6">
+                La <br/><span className="text-[#00F2FF] text-glow">Vitrine</span>
+              </h2>
+              <div className="w-12 h-[2px] bg-[#00F2FF] mb-6 shadow-[0_0_10px_#00F2FF]" />
+              <p className="font-manrope text-white/60 text-lg max-w-xs drop-shadow-md">
+                Glissez à travers l'obscurité pour découvrir les archives classées de nos soirées légendaires.
+              </p>
+            </div>
 
-            <motion.div style={{ x: xTransform }} className="flex h-full items-center relative z-10 px-[10vw]">
-              
-              <div className="w-[90vw] md:w-[60vw] flex flex-col justify-center shrink-0 pr-10 md:pr-20">
-                <span className="font-syne text-[#00F2FF] text-[10px] tracking-[0.4em] font-bold mb-4 uppercase">Exploration</span>
-                <h2 className="text-5xl md:text-7xl font-black font-syne uppercase tracking-widest text-white">
-                  La <span className="text-[#00F2FF] text-glow">Vitrine</span>
-                </h2>
-                <p className="font-manrope text-white/50 mt-6 max-w-sm text-lg">
-                  Glissez à travers l'obscurité pour découvrir les soirées qui ont façonné notre légende.
-                </p>
-              </div>
-
+            {/* PARTIE DROITE : LE PAQUET DE CARTES EMPILÉES */}
+            <div className="w-full md:w-[40vw] h-[55vh] md:h-[70vh] relative perspective-1000 z-10">
               {VITRINE_IMAGES.map((src, i) => (
-                <div key={i} className="w-[75vw] md:w-[35vw] h-[55vh] shrink-0 mr-8 md:mr-16 relative group interactive-element">
-                  <div className="w-full h-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-sm relative shadow-2xl">
-                    <img src={src} alt={`Vitrine ${i}`} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
-                    
-                    <div className="absolute bottom-8 left-8">
-                      <p className="font-syne font-bold tracking-[0.3em] text-[#00F2FF] text-[10px] uppercase mb-2">Dossier Classé</p>
-                      <h3 className="font-syne font-black text-white text-3xl tracking-widest uppercase">VOL. 0{i + 1}</h3>
-                    </div>
-                  </div>
-                </div>
+                <StackedCard 
+                  key={i} 
+                  src={src} 
+                  index={i} 
+                  total={VITRINE_IMAGES.length} 
+                  progress={vitrineScroll} 
+                />
               ))}
+            </div>
 
-              <div className="w-[30vw] shrink-0" />
-            </motion.div>
           </div>
         </section>
 
@@ -266,7 +337,7 @@ export default function Home() {
         </section>
 
         {/* FOOTER */}
-        <footer className="relative w-full py-16 flex flex-col items-center bg-black/60 border-t border-white/5 z-20">
+        <footer className="relative w-full py-16 flex flex-col items-center bg-black/30 border-t border-white/5 z-20">
           <h2 className="font-syne font-black tracking-[0.5em] text-xl md:text-2xl text-white/30 mb-8 text-glow leading-none">TRAP HOUSE</h2>
           <p className="text-white/20 text-[8px] md:text-[10px] font-syne uppercase tracking-[0.3em] text-center px-4 drop-shadow-md">
             © {new Date().getFullYear()} TRAP HOUSE EVENT. TOUS DROITS RÉSERVÉS.
