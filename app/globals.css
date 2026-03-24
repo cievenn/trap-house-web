@@ -18,6 +18,7 @@
     font-family: 'Manrope', sans-serif;
     cursor: none; 
     overflow-x: hidden;
+    position: relative;
   }
 }
 
