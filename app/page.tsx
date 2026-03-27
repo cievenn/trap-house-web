@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useRef, Suspense } from "react";
+import React, { useRef, Suspense, useEffect } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { Lock, Instagram, ChevronDown } from "lucide-react";
+import { Lock, Instagram, ChevronDown, Play, ShoppingBag, Crown, ArrowUp } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 
 import { VITRINE_DATA, VitrineCardType } from "@/lib/data";
 import { CustomCursor } from "@/components/CustomCursor";
 import { Logo3D } from "@/components/Logo3D";
 import { SmokeBackground } from "@/components/SmokeBackground";
+import Lenis from "lenis";
 
 // NAVIGATION PROPRE
 const NAV_LINKS = [
@@ -87,7 +88,7 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
     if (depth <= 0) return 0; 
     return Math.min(depth * 0.5, 0.85); 
   });
-
+  
   return (
     <motion.div 
       style={{ x, y, scale, rotateZ, opacity, filter, zIndex: total - index }} 
@@ -147,6 +148,30 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
 
 
 export default function Home() {
+  // ─────────────────────────────────────────────────
+  // SMOOTH SCROLL GLOBAL (Lenis)
+  // ─────────────────────────────────────────────────
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.4,            // durée de l'inertie (en secondes)
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,        // inertie sur molette souris
+      touchMultiplier: 1.5,     // légèrement accentué sur touch
+    });
+
+    let rafId: number;
+    const raf = (time: number) => {
+      lenis.raf(time);
+      rafId = requestAnimationFrame(raf);
+    };
+    rafId = requestAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      lenis.destroy();
+    };
+  }, []);
+
   const springConfig = { stiffness: 60, damping: 20, mass: 0.5 }; // Inertie lourde de base
 
   // 1. PROGRESS SCROLL GLOBAL
@@ -318,92 +343,199 @@ export default function Home() {
         </section>
 
         {/* =========================================================
-            SECTION 3 : RÉSEAUX SOCIAUX 
+            SECTION 3 : RÉSEAUX SOCIAUX (AMÉLIORÉE & ÉPURÉE)
         ========================================================= */}
-        <section id="reseaux" className="relative w-full min-h-[80vh] flex flex-col items-center justify-center overflow-hidden bg-transparent py-32 z-20">
+        <section id="reseaux" className="relative w-full min-h-[100vh] flex flex-col items-center justify-center overflow-hidden bg-transparent py-32 z-20">
           
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-[#0099FF]/5 blur-[120px] rounded-full pointer-events-none z-0" />
+          {/* Lueur d'ambiance globale (TRÈS SUBTILE) */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-[#00F2FF]/[0.02] blur-[120px] rounded-full pointer-events-none z-0" />
 
           {/* TEXTES DÉFILANTS */}
-          <div className="absolute top-1/4 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-20 -rotate-2 scale-110 z-0">
-            <motion.div animate={{ x: ["0%", "-50%"] }} transition={{ repeat: Infinity, ease: "linear", duration: 30 }} className="flex gap-8">
-              {Array(4).fill("TRAP HOUSE EVENT — ").map((text, i) => (
-                <span key={i} className="text-[8rem] md:text-[12rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '2px rgba(255,255,255,0.3)' }}>{text}</span>
+          <div className="absolute top-1/3 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-30 -rotate-3 scale-110 z-0">
+            <motion.div animate={{ x: ["0%", "-50%"] }} transition={{ repeat: Infinity, ease: "linear", duration: 40 }} className="flex gap-12">
+              {Array(6).fill("TRAP HOUSE EVENT — ").map((text, i) => (
+                <span key={`t1-${i}`} className="text-[6rem] md:text-[10rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.15)' }}>{text}</span>
               ))}
             </motion.div>
           </div>
 
-          <div className="absolute bottom-1/4 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-20 -rotate-2 scale-110 z-0">
-            <motion.div animate={{ x: ["-50%", "0%"] }} transition={{ repeat: Infinity, ease: "linear", duration: 40 }} className="flex gap-8">
-              {Array(4).fill("REJOIGNEZ LE CERCLE — ").map((text, i) => (
-                <span key={i} className="text-[8rem] md:text-[12rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '2px #00F2FF' }}>{text}</span>
+          <div className="absolute bottom-1/3 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-30 -rotate-3 scale-110 z-0">
+            <motion.div animate={{ x: ["-50%", "0%"] }} transition={{ repeat: Infinity, ease: "linear", duration: 50 }} className="flex gap-12">
+              {Array(6).fill("REJOIGNEZ LE CERCLE — ").map((text, i) => (
+                <span key={`t2-${i}`} className="text-[6rem] md:text-[10rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '1px rgba(0,242,255,0.4)' }}>{text}</span>
               ))}
             </motion.div>
           </div>
 
-          <div className="relative z-10 flex flex-col items-center">
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex flex-col items-center mb-16">
-              <span className="font-syne text-[#00F2FF] text-[10px] tracking-[0.4em] font-bold mb-4 uppercase drop-shadow-[0_0_10px_#00F2FF]">Connectivité</span>
-              <h2 className="text-3xl md:text-5xl font-black font-syne uppercase tracking-widest text-white drop-shadow-lg text-center">
-                Rejoignez le <span className="text-[#00F2FF] text-glow">Cercle</span>
+          <div className="relative z-10 flex flex-col items-center w-full px-6">
+            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} className="flex flex-col items-center mb-20 text-center">
+              <span className="font-syne text-[#00F2FF] text-[10px] md:text-xs tracking-[0.5em] font-bold mb-6 uppercase drop-shadow-[0_0_15px_rgba(0,242,255,0.8)] flex items-center gap-4">
+                <span className="w-8 h-[1px] bg-[#00F2FF]" />
+                Connectivité
+                <span className="w-8 h-[1px] bg-[#00F2FF]" />
+              </span>
+              <h2 className="text-4xl md:text-7xl font-black font-syne uppercase tracking-widest text-white drop-shadow-2xl">
+                Rejoignez le <span className="text-[#00F2FF] text-glow italic">Cercle</span>
               </h2>
             </motion.div>
             
-            <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+            {/* RÉSEAU (UNIQUEMENT INSTAGRAM) */}
+            <div className="flex justify-center w-full max-w-2xl mx-auto">
               <motion.a 
                 href="#" 
                 initial={{ opacity: 0, y: 50 }} 
                 whileInView={{ opacity: 1, y: 0 }} 
                 viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="group relative w-[80vw] md:w-96 h-32 flex items-center justify-center rounded-[2rem] border border-white/10 bg-[#020202]/80 backdrop-blur-xl overflow-hidden interactive-element transition-all duration-500 hover:border-[#00F2FF]/50 hover:shadow-[0_0_40px_rgba(0,242,255,0.15)] hover:scale-105"
+                transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
+                className="group relative w-full h-40 flex items-center justify-between px-6 md:px-10 rounded-[2rem] border border-white/10 bg-[#020202]/80 backdrop-blur-2xl overflow-hidden interactive-element transition-all duration-500 hover:border-[#00F2FF]/60 hover:shadow-[0_0_50px_rgba(0,242,255,0.15)] hover:-translate-y-2"
               >
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,242,255,0.15)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#00F2FF]/0 via-[#00F2FF]/5 to-[#00F2FF]/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                
                 <div className="relative flex items-center gap-6 z-10">
-                  <div className="p-4 rounded-full bg-white/5 group-hover:bg-[#00F2FF]/10 transition-colors duration-300">
-                    <Instagram size={32} className="text-white group-hover:text-[#00F2FF] transition-colors duration-300 drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]" />
+                  <div className="p-5 rounded-full bg-white/5 border border-white/5 group-hover:bg-[#00F2FF]/10 group-hover:border-[#00F2FF]/30 transition-all duration-500 group-hover:scale-110">
+                    <Instagram size={32} className="text-white group-hover:text-[#00F2FF] transition-colors duration-500 drop-shadow-lg" />
                   </div>
-                  <span className="font-syne font-black text-2xl tracking-[0.2em] text-white group-hover:text-[#00F2FF] transition-colors duration-300 uppercase drop-shadow-lg">
-                    Instagram
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="font-syne font-black text-2xl md:text-3xl tracking-[0.2em] text-white group-hover:text-[#00F2FF] transition-colors duration-500 uppercase">
+                      Instagram
+                    </span>
+                    <span className="font-manrope text-white/40 text-xs tracking-widest uppercase mt-1 group-hover:text-white/70 transition-colors">
+                      Le Visuel
+                    </span>
+                  </div>
                 </div>
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#00F2FF] to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out origin-center" />
+                
+                <div className="relative z-10 w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-[#00F2FF]/50 group-hover:bg-[#00F2FF]/10 transition-all duration-500 -rotate-45 group-hover:rotate-0">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white group-hover:text-[#00F2FF] transition-colors">
+                    <path d="M1 13L13 1M13 1H3M13 1V11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
               </motion.a>
             </div>
           </div>
         </section>
         
-        {/* SECTION 4 : VIP */}
-        <section id="vip" className="relative w-full py-32 md:py-48 px-6 bg-transparent z-20">
-          <div className="max-w-7xl mx-auto">
+        {/* =========================================================
+            SECTION 4 : VIP & SHOP (AMÉLIORÉE & SANS BACKGROUND)
+        ========================================================= */}
+        <section id="vip" className="relative w-full min-h-screen py-32 md:py-48 px-6  z-20 overflow-hidden">
+          
+          <div className="max-w-7xl mx-auto relative z-10">
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-24 text-center flex flex-col items-center">
-              <Lock className="w-8 h-8 text-[#00F2FF] mb-6 drop-shadow-[0_0_10px_#00F2FF]" />
-              <h2 className="text-3xl md:text-5xl font-black font-syne uppercase tracking-widest text-white mb-4 drop-shadow-lg">
-                Zone <span className="text-white/50">Privilège</span>
+              <div className="relative w-20 h-20 flex items-center justify-center mb-8">
+                <div className="absolute inset-0 border-2 border-[#00F2FF] rounded-full animate-ping opacity-20" />
+                <div className="absolute inset-2 border border-[#00F2FF]/50 rounded-full animate-[spin_4s_linear_infinite]" />
+                <Lock className="w-8 h-8 text-[#00F2FF] drop-shadow-[0_0_15px_#00F2FF]" />
+              </div>
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black font-syne uppercase tracking-widest text-white mb-6 drop-shadow-2xl">
+                Zone <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/50 to-white/10">Privilège</span>
               </h2>
+              <p className="font-manrope text-white/40 text-sm md:text-base max-w-lg mx-auto uppercase tracking-widest">
+                L'accès est restreint. Le contenu est exclusif.
+              </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-[2rem] border border-white/5 overflow-hidden group bg-[#020202]/60 shadow-2xl backdrop-blur-md">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#00F2FF]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="relative z-20 flex flex-col items-center p-8 text-center pointer-events-none">
-                  <h3 className="text-3xl md:text-5xl font-black font-syne text-white tracking-widest mb-4">TRAP HOUSE <br/><span className="text-white/20">SHOP</span></h3>
-                  <p className="font-manrope text-white/50 text-sm mb-12 max-w-xs">Merchandising exclusif. Le style de la nuit, réservé à nos membres.</p>
-                  <div className="px-8 py-4 rounded-full bg-black/50 border border-white/10 group-hover:border-[#00F2FF] transition-all duration-300">
-                    <p className="text-white/50 group-hover:text-[#00F2FF] font-syne text-[10px] tracking-[0.4em] font-bold uppercase transition-colors">Coming Soon</p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+              
+              {/* CARTE SHOP */}
+              <motion.div 
+                initial={{ opacity: 0, y: 50, rotateX: 5 }} 
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }} 
+                viewport={{ once: true }} 
+                transition={{ delay: 0.1, duration: 0.8, type: "spring", bounce: 0.3 }} 
+                className="interactive-element relative h-[550px] flex flex-col items-center justify-center rounded-[2.5rem] border border-white/5 overflow-hidden group bg-[#020202] shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-white/10 transition-colors duration-500"
+              >
+                {/* FOND ATMOSPHÉRIQUE : Texture bruit + nappes de lumière */}
+                <svg className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                  <filter id="noise-shop">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+                    <feColorMatrix type="saturate" values="0" />
+                  </filter>
+                  <rect width="100%" height="100%" filter="url(#noise-shop)" />
+                </svg>
+                {/* Nappes de lumière ambiantes */}
+                <div className="absolute -top-1/4 left-1/2 -translate-x-1/2 w-[60%] h-[50%] bg-[#00F2FF]/[0.04] blur-[80px] rounded-full pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-white/[0.02] blur-[60px] rounded-full pointer-events-none" />
+                {/* Vitre acrylique intérieure subtile */}
+                <div className="absolute inset-[1px] rounded-[2.4rem] bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
+                {/* Effet Spotlight Hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_50%_0%,rgba(0,242,255,0.12)_0%,transparent_65%)]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#00F2FF]/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                
+                <div className="relative z-20 flex flex-col items-center p-6 md:p-10 text-center w-full">
+                  <ShoppingBag className="w-12 h-12 text-white/20 mb-8 group-hover:text-[#00F2FF] group-hover:scale-110 transition-all duration-500 drop-shadow-[0_0_20px_rgba(0,242,255,0)] group-hover:drop-shadow-[0_0_20px_rgba(0,242,255,0.8)]" />
+                  
+                  <h3 className="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl font-black font-syne text-white tracking-wider md:tracking-widest mb-6 leading-tight w-full break-words">
+                    TRAP HOUSE <br/>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-b from-white/40 to-white/10 group-hover:text-[#00F2FF] transition-colors duration-500">SHOP</span>
+                  </h3>
+                  
+                  <p className="font-manrope text-white/40 text-sm mb-12 max-w-sm leading-relaxed group-hover:text-white/60 transition-colors">
+                    Merchandising exclusif. Des pièces limitées forgées dans l'esthétique de la nuit. Réservé à l'élite.
+                  </p>
+                  
+                  <div className="relative px-10 py-4 rounded-full bg-white/5 border border-white/10 group-hover:border-[#00F2FF]/80 overflow-hidden transition-all duration-500 cursor-pointer">
+                    <div className="absolute inset-0 bg-[#00F2FF] translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-out" />
+                    <p className="relative z-10 text-white/50 group-hover:text-black font-syne text-[11px] tracking-[0.4em] font-black uppercase transition-colors duration-500">
+                      Coming Soon
+                    </p>
                   </div>
                 </div>
+                
+                <div className="absolute top-8 left-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+                <div className="absolute top-8 left-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+                <div className="absolute bottom-8 right-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+                <div className="absolute bottom-8 right-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-[2rem] border border-white/5 overflow-hidden group bg-[#020202]/60 shadow-2xl backdrop-blur-md">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#00F2FF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="relative z-20 flex flex-col items-center p-8 text-center pointer-events-none">
-                  <h3 className="text-3xl md:text-5xl font-black font-syne text-white tracking-widest mb-4">RÉSERVATIONS <br/><span className="text-[#00F2FF] text-glow">VIP</span></h3>
-                  <p className="font-manrope text-white/50 text-sm mb-12 max-w-xs">Garantissez votre table, accédez aux zones privées et profitez d'un service premium.</p>
-                  <div className="px-8 py-4 rounded-full bg-black/50 border border-white/10 group-hover:border-[#00F2FF] transition-all duration-300">
-                    <p className="text-white/50 group-hover:text-[#00F2FF] font-syne text-[10px] tracking-[0.4em] font-bold uppercase transition-colors">Coming Soon</p>
+              {/* CARTE VIP RÉSERVATIONS */}
+              <motion.div 
+                initial={{ opacity: 0, y: 50, rotateX: 5 }} 
+                whileInView={{ opacity: 1, y: 0, rotateX: 0 }} 
+                viewport={{ once: true }} 
+                transition={{ delay: 0.3, duration: 0.8, type: "spring", bounce: 0.3 }} 
+                className="interactive-element relative h-[550px] flex flex-col items-center justify-center rounded-[2.5rem] border border-white/5 overflow-hidden group bg-[#020202] shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-white/10 transition-colors duration-500"
+              >
+                {/* FOND ATMOSPHÉRIQUE : Texture bruit + nappes de lumière */}
+                <svg className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                  <filter id="noise-vip">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+                    <feColorMatrix type="saturate" values="0" />
+                  </filter>
+                  <rect width="100%" height="100%" filter="url(#noise-vip)" />
+                </svg>
+                {/* Nappes de lumière ambiantes — légèrement différentes de la carte Shop */}
+                <div className="absolute -top-1/4 right-1/4 w-[50%] h-[50%] bg-[#00F2FF]/[0.05] blur-[90px] rounded-full pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-[45%] h-[40%] bg-white/[0.02] blur-[60px] rounded-full pointer-events-none" />
+                {/* Vitre acrylique intérieure subtile */}
+                <div className="absolute inset-[1px] rounded-[2.4rem] bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
+                {/* Effet Spotlight Hover */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_50%_0%,rgba(0,242,255,0.12)_0%,transparent_65%)]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#00F2FF]/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                
+                <div className="relative z-20 flex flex-col items-center p-6 md:p-10 text-center w-full">
+                  <Crown className="w-12 h-12 text-white/20 mb-8 group-hover:text-[#00F2FF] group-hover:scale-110 transition-all duration-500 drop-shadow-[0_0_20px_rgba(0,242,255,0)] group-hover:drop-shadow-[0_0_20px_rgba(0,242,255,0.8)]" />
+                  
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black font-syne text-white tracking-wider mb-6 leading-tight">
+                    RÉSERVATIONS <span className="text-[#00F2FF] text-glow group-hover:text-white transition-colors duration-500">VIP</span>
+                  </h3>
+                  
+                  <p className="font-manrope text-white/40 text-sm mb-12 max-w-sm leading-relaxed group-hover:text-white/60 transition-colors">
+                    Garantissez votre table, accédez aux zones privées et profitez d'un service premium. Le confort dans le chaos.
+                  </p>
+                  
+                  <div className="relative px-10 py-4 rounded-full bg-white/5 border border-white/10 group-hover:border-[#00F2FF]/80 overflow-hidden transition-all duration-500 cursor-pointer">
+                    <div className="absolute inset-0 bg-[#00F2FF] translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-out" />
+                    <p className="relative z-10 text-white/50 group-hover:text-black font-syne text-[11px] tracking-[0.4em] font-black uppercase transition-colors duration-500">
+                      Coming Soon
+                    </p>
                   </div>
                 </div>
+
+                <div className="absolute top-8 right-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+                <div className="absolute top-8 right-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+                <div className="absolute bottom-8 left-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+                <div className="absolute bottom-8 left-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
               </motion.div>
             </div>
           </div>
