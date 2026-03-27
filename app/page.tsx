@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Lock, Instagram, ChevronDown } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 
-import { VITRINE_IMAGES } from "@/lib/data";
+import { VITRINE_DATA, VitrineCardType } from "@/lib/data";
 import { CustomCursor } from "@/components/CustomCursor";
 import { Logo3D } from "@/components/Logo3D";
 import { SmokeBackground } from "@/components/SmokeBackground";
@@ -21,18 +21,27 @@ const NAV_LINKS = [
 // ==========================================================================
 // COMPOSANT : CARTE VITRINE EMPILÉE (AWWWARDS EDITION - SMOKE DISSIPATION)
 // ==========================================================================
-const StackedCard = ({ src, index, total, progress }: { src: string, index: number, total: number, progress: any }) => {
+// Fraction du scroll de la section réservée comme zone tampon (les cartes restent intactes)
+const VITRINE_BUFFER = 0.10;
+
+const StackedCard = ({ src, supertitle, volume, status, description, index, total, progress }: VitrineCardType & { index: number, total: number, progress: any }) => {
   // 🧠 MATHÉMATIQUES DE DISSIPATION (Physique des gaz/fumée)
   
+  // Calcule un progress normalisé qui ignore le scroll pendant le tampon initial
+  const getDepth = (p: number) => {
+    const effective = Math.max(0, p - VITRINE_BUFFER) / (1 - VITRINE_BUFFER);
+    return index - effective * total;
+  };
+
   const x = useTransform(progress, (p: number) => {
-    const depth = index - p * total;
+    const depth = getDepth(p);
     // Part légèrement à gauche en se dissipant
     if (depth < 0) return `${depth * 80}%`; 
     return "0%";
   });
 
   const y = useTransform(progress, (p: number) => {
-    const depth = index - p * total;
+    const depth = getDepth(p);
     // EFFET FUMÉE : La carte s'envole vers le HAUT (valeur négative amplifiée)
     if (depth < 0) return `${depth * 250}px`; 
     // Empilement normal (vers le bas) quand elle est en attente
@@ -40,7 +49,7 @@ const StackedCard = ({ src, index, total, progress }: { src: string, index: numb
   });
 
   const scale = useTransform(progress, (p: number) => {
-    const depth = index - p * total;
+    const depth = getDepth(p);
     // EFFET FUMÉE : La matière se dilate/s'étend en disparaissant
     if (depth < 0) return 1 + Math.abs(depth) * 0.3; 
     // Rétrécit dans le fond de la pile
@@ -48,14 +57,14 @@ const StackedCard = ({ src, index, total, progress }: { src: string, index: numb
   });
 
   const rotateZ = useTransform(progress, (p: number) => {
-    const depth = index - p * total;
+    const depth = getDepth(p);
     // Vrille douce comme une feuille morte dans le vent
     if (depth < 0) return `${depth * 15}deg`; 
     return `${(index % 2 === 0 ? 1 : -1) * depth * 2}deg`; 
   });
 
   const opacity = useTransform(progress, (p: number) => {
-    const depth = index - p * total;
+    const depth = getDepth(p);
     // EFFET FUMÉE : La carte disparaît très vite dès qu'elle est lâchée
     if (depth < 0) return Math.max(1 - Math.abs(depth) * 1.5, 0); 
     return 1; 
@@ -63,7 +72,7 @@ const StackedCard = ({ src, index, total, progress }: { src: string, index: numb
 
   // NOUVEAU : LE FLOU DYNAMIQUE (L'illusion de la fumée)
   const filter = useTransform(progress, (p: number) => {
-    const depth = index - p * total;
+    const depth = getDepth(p);
     if (depth < 0) {
       // Le flou augmente exponentiellement pour détruire les contours de l'image
       const blurValue = Math.min(Math.pow(Math.abs(depth) * 6, 2), 40); 
@@ -74,7 +83,7 @@ const StackedCard = ({ src, index, total, progress }: { src: string, index: numb
 
   // Assombrissement pour simuler la profondeur de champ
   const depthShadow = useTransform(progress, (p: number) => {
-    const depth = index - p * total;
+    const depth = getDepth(p);
     if (depth <= 0) return 0; 
     return Math.min(depth * 0.5, 0.85); 
   });
@@ -112,19 +121,19 @@ const StackedCard = ({ src, index, total, progress }: { src: string, index: numb
             <div>
               <p className="font-syne font-bold tracking-[0.4em] text-[#0099FF] text-[10px] uppercase mb-2 flex items-center gap-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#0099FF] animate-pulse shadow-[0_0_10px_#0099FF]" />
-                Archive
+                {supertitle}
               </p>
               <h3 className="font-syne font-black text-white text-5xl md:text-6xl tracking-[0.1em] uppercase leading-none drop-shadow-2xl">
-                VOL. <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20">0{index + 1}</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20">{volume}</span>
               </h3>
             </div>
             <div className="text-right hidden md:block">
               <p className="font-syne text-white/30 text-[9px] tracking-[0.3em] uppercase mb-1">Status</p>
-              <p className="font-syne text-[#0099FF] text-[10px] font-bold tracking-[0.2em] uppercase">Classified</p>
+              <p className="font-syne text-[#0099FF] text-[10px] font-bold tracking-[0.2em] uppercase">{status}</p>
             </div>
           </div>
           <p className="font-manrope text-white/50 text-sm max-w-[90%] md:max-w-[80%] leading-relaxed">
-            L'apogée de l'énergie underground. Une nuit classée secret défense où les règles ont été réécrites dans l'obscurité.
+            {description}
           </p>
         </div>
 
@@ -221,7 +230,7 @@ export default function Home() {
         </motion.nav>
 
         {/* SECTION 1 : SCROLL-BASED STORYTELLING & LOGO 3D */}
-        <section id="vision" ref={heroRef} className="relative w-full h-[250vh]">
+        <section id="vision" ref={heroRef} className="relative w-full h-[350vh]">
           <div className="sticky top-0 w-full h-[100dvh] flex flex-col items-center justify-center overflow-hidden px-6">
             
             <motion.div style={{ opacity: logoOpacity }} className="absolute inset-0 z-20 pointer-events-none">
@@ -273,7 +282,7 @@ export default function Home() {
           ref={vitrineRef} 
           className="relative w-full bg-transparent z-20"
           // La hauteur définit la durée du scroll. On donne 120vh par carte pour avoir le temps de les admirer.
-          style={{ height: `${VITRINE_IMAGES.length * 120}vh` }} 
+          style={{ height: `${VITRINE_DATA.length * 120}vh` }} 
         >
           <motion.div 
             style={{ opacity: vitrineOpacity, scale: vitrineScale }}
@@ -294,12 +303,12 @@ export default function Home() {
 
             {/* PARTIE DROITE : LE PAQUET DE CARTES EMPILÉES */}
             <div className="w-full md:w-[60vw] xl:w-[35vw] h-[60vh] xl:h-[75vh] relative perspective-1000 z-10 pointer-events-none">
-              {VITRINE_IMAGES.map((src, i) => (
+              {VITRINE_DATA.map((card, i) => (
                 <StackedCard 
                   key={i} 
-                  src={src} 
+                  {...card}
                   index={i} 
-                  total={VITRINE_IMAGES.length} 
+                  total={VITRINE_DATA.length} 
                   progress={smoothVitrineScroll} 
                 />
               ))}

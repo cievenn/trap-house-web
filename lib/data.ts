@@ -36,11 +36,55 @@ export const NEWS_DATA: NewsType[] = [
   },
 ];
 
-export const VITRINE_IMAGES = [
-  "https://images.unsplash.com/photo-1559223607-a43c990c692c?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1470229722913-7c090be5f524?q=80&w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=800&auto=format&fit=crop"
+export interface VitrineCardType {
+  src: string;
+  supertitle: string;
+  volume: string;
+  status: string;
+  description: string;
+}
+
+export const VITRINE_DATA: VitrineCardType[] = [
+  {
+    src: "https://images.unsplash.com/photo-1559223607-a43c990c692c?q=80&w=800&auto=format&fit=crop",
+    supertitle: "Archive",
+    volume: "VOL. 01",
+    status: "Classified",
+    description: "L'apogée de l'énergie underground. Une nuit classée secret défense où les règles ont été réécrites dans l'obscurité.",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?q=80&w=800&auto=format&fit=crop",
+    supertitle: "Archive",
+    volume: "VOL. 02",
+    status: "Classified",
+    description: "La deuxième édition. Basses abyssales, lumières stroboscopiques et un line-up gardé secret jusqu'au dernier instant.",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=800&auto=format&fit=crop",
+    supertitle: "Archive",
+    volume: "VOL. 03",
+    status: "Classified",
+    description: "Une soirée à huis clos. L'accès, un privilège. L'expérience, une cicatrice sonore que vous porteriez à vie.",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?q=80&w=800&auto=format&fit=crop",
+    supertitle: "Archive",
+    volume: "VOL. 04",
+    status: "Classified",
+    description: "Le collectif au complet pour une nuit hors normes. Smoke machines, fog & art brutaliste dans un warehouse confidentiel.",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1470229722913-7c090be5f524?q=80&w=800&auto=format&fit=crop",
+    supertitle: "Archive",
+    volume: "VOL. 05",
+    status: "Classified",
+    description: "Quand le son devient matière. Five heures de set ininterrompu, cinq cents initiés, zéro compromis sur l'intensité.",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=800&auto=format&fit=crop",
+    supertitle: "Archive",
+    volume: "VOL. 06",
+    status: "Classified",
+    description: "L'édition la plus sombre. Un lieu abandonné, une acoustique parfaite. La légende est née cette nuit-là.",
+  },
 ];
