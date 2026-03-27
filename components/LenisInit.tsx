@@ -12,6 +12,12 @@ export function LenisInit() {
       touchMultiplier: 1.5,
     });
 
+    // Stockage global de la progression du scroll pour éviter de requérir window.scrollY
+    // (prévient le layout thrashing dans les boucles WebGL).
+    lenis.on("scroll", (e: any) => {
+      (window as any).lenisScroll = e.animatedScroll;
+    });
+
     let rafId: number;
     const raf = (time: number) => {
       lenis.raf(time);

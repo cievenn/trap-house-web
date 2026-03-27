@@ -13,6 +13,12 @@ export const CustomCursor = () => {
   const springY = useSpring(cursorY, { stiffness: 500, damping: 28, mass: 0.2 });
 
   useEffect(() => {
+    // Si l'appareil cible a un pointeur tactile (mobile/tablette), on annule tout 
+    // pour éviter de vider la batterie avec des calculs Framer Motion invisibles.
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) {
+      return;
+    }
+
     let rafId: number | null = null;
     let currentTarget: HTMLElement | null = null;
 

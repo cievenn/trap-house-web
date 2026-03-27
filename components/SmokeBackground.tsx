@@ -144,8 +144,9 @@ function ElectricSmokeLayer() {
 
     const u = matRef.current.uniforms;
     u.uTime.value       = clock.elapsedTime;
-    // Lenis gère déjà le lissage du scroll, on le lit de façon parfaitement synchronisée avec la rAF
-    u.uScroll.value     = window.scrollY * 0.0015;
+    // Lecture directe depuis la mémoire RAM (interception Lenis) pour éviter d'invalider le DOM (Layout Thrashing)
+    const currentScroll = (window as any).lenisScroll || 0;
+    u.uScroll.value     = currentScroll * 0.0015;
     u.uResolution.value.set(size.width, size.height);
   });
 

@@ -16,18 +16,30 @@ export const TiltCard = ({ data, onClick }: { data: NewsType; onClick: () => voi
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["12deg", "-12deg"]);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-12deg", "12deg"]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    x.set(e.clientX - rect.left - rect.width / 2);
-    y.set(e.clientY - rect.top - rect.height / 2);
+  const rectRef = useRef<DOMRect | null>(null);
+
+  const handleMouseEnter = () => {
+    if (ref.current) {
+      rectRef.current = ref.current.getBoundingClientRect();
+    }
   };
 
-  const handleMouseLeave = () => { x.set(0); y.set(0); };
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!rectRef.current) return;
+    const rect = rectRef.current;
+    x.set((e.clientX - rect.left - rect.width / 2) / rect.width);
+    y.set((e.clientY - rect.top - rect.height / 2) / rect.height);
+  };
+
+  const handleMouseLeave = () => { 
+    x.set(0); 
+    y.set(0); 
+    rectRef.current = null;
+  };
 
   return (
     <motion.div
-      ref={ref} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onClick={onClick}
+      ref={ref} onMouseEnter={handleMouseEnter} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onClick={onClick}
       style={{ rotateY, rotateX, transformStyle: "preserve-3d" }}
       className="relative w-full max-w-[320px] mx-auto h-[550px] cursor-pointer group perspective-1000"
     >
