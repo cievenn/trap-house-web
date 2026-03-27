@@ -259,7 +259,7 @@ export default function Home() {
           <div className="sticky top-0 w-full h-[100dvh] flex flex-col items-center justify-center overflow-hidden px-6">
             
             <motion.div style={{ opacity: logoOpacity }} className="absolute inset-0 z-20 pointer-events-none">
-              <div className="absolute inset-0 pointer-events-auto cursor-grab active:cursor-grabbing">
+              <div className="absolute inset-0 pointer-events-auto">
                 <Canvas camera={{ position: [0, 0, 9], fov: 45 }} dpr={[1, 2]}>
                   <Suspense fallback={null}>
                     <group position={[0, -1, 0]} scale={0.85}>
