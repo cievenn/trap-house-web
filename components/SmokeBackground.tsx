@@ -144,6 +144,13 @@ function ElectricSmokeLayer() {
     depthWrite: false,
   }), [uniforms]);
 
+  // Cleanup GPU memory on unmount
+  useEffect(() => {
+    return () => {
+      material.dispose();
+    };
+  }, [material]);
+
   useFrame(({ clock }) => {
     if (!matRef.current) return;
 

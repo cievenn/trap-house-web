@@ -1,3 +1,4 @@
+// TODO: Ce composant n'est importé nulle part — à intégrer dans une future section News ou à supprimer.
 "use client";
 
 import React from "react";

@@ -1,59 +1,72 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useRef, useEffect } from "react";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 
 export const CustomCursor = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
+  const isHovered = useRef(false);
+  const dotRef = useRef<HTMLDivElement>(null);
+
+  const springX = useSpring(cursorX, { stiffness: 500, damping: 28, mass: 0.2 });
+  const springY = useSpring(cursorY, { stiffness: 500, damping: 28, mass: 0.2 });
 
   useEffect(() => {
-    const updateMousePosition = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
+    const onMove = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
     };
-    
-    const handleMouseOver = (e: MouseEvent) => {
+
+    const onOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      // Détecte si on survole un lien, un bouton ou un élément avec la classe interactive-element
-      if (target.tagName.toLowerCase() === 'a' || 
-          target.tagName.toLowerCase() === 'button' || 
-          target.closest(".interactive-element")) {
-        setIsHovered(true);
-      } else {
-        setIsHovered(false);
+      const hovered =
+        target.tagName === "A" ||
+        target.tagName === "BUTTON" ||
+        !!target.closest(".interactive-element");
+
+      if (hovered !== isHovered.current) {
+        isHovered.current = hovered;
+        if (dotRef.current) {
+          dotRef.current.style.width = hovered ? "24px" : "8px";
+          dotRef.current.style.height = hovered ? "24px" : "8px";
+          dotRef.current.style.backgroundColor = hovered
+            ? "rgba(0, 242, 255, 0.5)"
+            : "#ffffff";
+          dotRef.current.style.boxShadow = hovered
+            ? "0 0 20px rgba(0, 242, 255, 0.8)"
+            : "0 0 10px #fff";
+        }
       }
     };
 
-    window.addEventListener("mousemove", updateMousePosition);
-    window.addEventListener("mouseover", handleMouseOver);
-    
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseover", onOver);
     return () => {
-      window.removeEventListener("mousemove", updateMousePosition);
-      window.removeEventListener("mouseover", handleMouseOver);
-    }
-  }, []);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseover", onOver);
+    };
+  }, [cursorX, cursorY]);
 
   return (
     <>
-      {/* Le point central réactif */}
       <motion.div
+        ref={dotRef}
         className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-screen hidden md:block rounded-full"
-        animate={{ 
-          x: mousePosition.x - (isHovered ? 12 : 4), 
-          y: mousePosition.y - (isHovered ? 12 : 4),
-          width: isHovered ? 24 : 8,
-          height: isHovered ? 24 : 8,
-          backgroundColor: isHovered ? "rgba(0, 242, 255, 0.5)" : "#ffffff",
-          boxShadow: isHovered ? "0 0 20px rgba(0, 242, 255, 0.8)" : "0 0 10px #fff"
+        style={{
+          x: springX,
+          y: springY,
+          width: 8,
+          height: 8,
+          backgroundColor: "#ffffff",
+          boxShadow: "0 0 10px #fff",
+          translateX: "-50%",
+          translateY: "-50%",
         }}
-        transition={{ type: "spring", stiffness: 500, damping: 28, mass: 0.2 }}
       />
-      
-      {/* Le Spotlight géant qui éclaire la fumée */}
       <motion.div
         className="fixed top-0 left-0 pointer-events-none z-[9998] mix-blend-screen hidden md:block"
-        animate={{ x: mousePosition.x - 250, y: mousePosition.y - 250 }}
-        transition={{ type: "tween", ease: "easeOut", duration: 0.15 }}
+        style={{ x: springX, y: springY, translateX: "-250px", translateY: "-250px" }}
       >
         <div className="w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(0,242,255,0.12)_0%,rgba(0,242,255,0.05)_30%,transparent_70%)]" />
       </motion.div>
