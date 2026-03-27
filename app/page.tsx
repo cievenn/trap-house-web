@@ -541,12 +541,35 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FOOTER */}
-        <footer className="relative w-full py-16 flex flex-col items-center bg-[#010101]/80 border-t border-white/5 z-20">
-          <h2 className="font-syne font-black tracking-[0.5em] text-xl md:text-2xl text-white/20 mb-8 text-glow leading-none">TRAP HOUSE</h2>
-          <p className="text-white/20 text-[8px] md:text-[10px] font-syne uppercase tracking-[0.3em] text-center px-4 drop-shadow-md">
-            © {new Date().getFullYear()} TRAP HOUSE EVENT. TOUS DROITS RÉSERVÉS.
+        {/* =========================================================
+            FOOTER MINIMALISTE & GLASSMORPHISME
+        ========================================================= */}
+        <footer className="relative w-full py-5 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between border-t border-white/5 bg-[#020202]/30 backdrop-blur-2xl z-20">
+          
+          {/* GAUCHE : Marque & Discrétion */}
+          <div className="flex items-center gap-3 mb-4 md:mb-0">
+             <span className="w-1.5 h-1.5 rounded-full bg-[#00F2FF] shadow-[0_0_8px_#00F2FF]" />
+             <span className="font-syne font-bold tracking-[0.4em] text-[10px] text-white/80 uppercase">Trap House</span>
+          </div>
+
+          {/* CENTRE : Copyright ultra minimal */}
+          <p className="font-syne text-white/30 text-[9px] tracking-[0.3em] uppercase mb-4 md:mb-0">
+            © {new Date().getFullYear()} Tous droits réservés.
           </p>
+
+          {/* DROITE : Liens essentiels & Remontée */}
+          <div className="flex items-center gap-6">
+            <a href="#" className="font-syne text-white/30 hover:text-[#00F2FF] text-[9px] tracking-[0.2em] uppercase transition-colors duration-300 interactive-element">Instagram</a>
+            <a href="#" className="font-syne text-white/30 hover:text-[#00F2FF] text-[9px] tracking-[0.2em] uppercase transition-colors duration-300 interactive-element">Légal</a>
+            <div className="w-[1px] h-3 bg-white/10" /> {/* Séparateur subtil */}
+            <button 
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="group flex items-center gap-2 font-syne text-white/30 hover:text-[#00F2FF] text-[9px] tracking-[0.2em] uppercase transition-colors duration-300 interactive-element border-none bg-transparent cursor-pointer outline-none"
+            >
+              Top <ArrowUp size={10} className="group-hover:-translate-y-0.5 transition-transform duration-300" />
+            </button>
+          </div>
+          
         </footer>
 
       </main>
