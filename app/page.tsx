@@ -2,7 +2,7 @@
 
 import React, { useRef, Suspense } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { Lock, Instagram, Twitter, Disc, ChevronDown } from "lucide-react";
+import { Lock, Instagram, ChevronDown } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 
 import { VITRINE_IMAGES } from "@/lib/data";
@@ -19,111 +19,118 @@ const NAV_LINKS = [
 ];
 
 // ==========================================================================
-// COMPOSANT : CARTE VITRINE EMPILÉE
+// COMPOSANT : CARTE VITRINE EMPILÉE (AWWWARDS EDITION - SMOKE DISSIPATION)
 // ==========================================================================
 const StackedCard = ({ src, index, total, progress }: { src: string, index: number, total: number, progress: any }) => {
-  const step = 1 / total;
-  const enterIndex = index * step;
-  const exitIndex = (index + 1) * step;
-  const isLast = index === total - 1;
+  // 🧠 MATHÉMATIQUES DE DISSIPATION (Physique des gaz/fumée)
+  
+  const x = useTransform(progress, (p: number) => {
+    const depth = index - p * total;
+    // Part légèrement à gauche en se dissipant
+    if (depth < 0) return `${depth * 80}%`; 
+    return "0%";
+  });
 
-  // DÉCALAGE VISUEL
-  const xOffset = index * 40; 
-  const yOffset = index * 20; 
-  const scaleOffset = index * 0.05;
+  const y = useTransform(progress, (p: number) => {
+    const depth = index - p * total;
+    // EFFET FUMÉE : La carte s'envole vers le HAUT (valeur négative amplifiée)
+    if (depth < 0) return `${depth * 250}px`; 
+    // Empilement normal (vers le bas) quand elle est en attente
+    return `${depth * 40}px`; 
+  });
 
-  let inputRanges, xValues, yValues, scaleValues, rotateValues, opacityRanges, opacityValues;
+  const scale = useTransform(progress, (p: number) => {
+    const depth = index - p * total;
+    // EFFET FUMÉE : La matière se dilate/s'étend en disparaissant
+    if (depth < 0) return 1 + Math.abs(depth) * 0.3; 
+    // Rétrécit dans le fond de la pile
+    return Math.max(1 - depth * 0.06, 0.8); 
+  });
 
-  if (index === 0) {
-    inputRanges = [0, exitIndex];
-    xValues = ["0px", "-120%"];
-    yValues = ["0px", "0px"];
-    scaleValues = [1, 1];
-    rotateValues = ["0deg", "-15deg"];
-    
-    opacityRanges = [0, exitIndex];
-    opacityValues = [1, 0];
-  } else {
-    inputRanges = [0, enterIndex, exitIndex];
-    xValues = [`${xOffset}px`, "0px", isLast ? "0px" : "-120%"];
-    yValues = [`${yOffset}px`, "0px", "0px"];
-    scaleValues = [1 - scaleOffset, 1, 1];
-    rotateValues = ["0deg", "0deg", isLast ? "0deg" : "-15deg"];
-    
-    opacityRanges = [0, enterIndex, exitIndex];
-    opacityValues = [1, 1, isLast ? 1 : 0];
-  }
+  const rotateZ = useTransform(progress, (p: number) => {
+    const depth = index - p * total;
+    // Vrille douce comme une feuille morte dans le vent
+    if (depth < 0) return `${depth * 15}deg`; 
+    return `${(index % 2 === 0 ? 1 : -1) * depth * 2}deg`; 
+  });
 
-  const x = useTransform(progress, inputRanges, xValues);
-  const y = useTransform(progress, inputRanges, yValues);
-  const scale = useTransform(progress, inputRanges, scaleValues);
-  const rotate = useTransform(progress, inputRanges, rotateValues);
-  const opacity = useTransform(progress, opacityRanges, opacityValues);
+  const opacity = useTransform(progress, (p: number) => {
+    const depth = index - p * total;
+    // EFFET FUMÉE : La carte disparaît très vite dès qu'elle est lâchée
+    if (depth < 0) return Math.max(1 - Math.abs(depth) * 1.5, 0); 
+    return 1; 
+  });
+
+  // NOUVEAU : LE FLOU DYNAMIQUE (L'illusion de la fumée)
+  const filter = useTransform(progress, (p: number) => {
+    const depth = index - p * total;
+    if (depth < 0) {
+      // Le flou augmente exponentiellement pour détruire les contours de l'image
+      const blurValue = Math.min(Math.pow(Math.abs(depth) * 6, 2), 40); 
+      return `blur(${blurValue}px) grayscale(${Math.min(Math.abs(depth) * 100, 100)}%)`;
+    }
+    return "blur(0px) grayscale(0%)";
+  });
+
+  // Assombrissement pour simuler la profondeur de champ
+  const depthShadow = useTransform(progress, (p: number) => {
+    const depth = index - p * total;
+    if (depth <= 0) return 0; 
+    return Math.min(depth * 0.5, 0.85); 
+  });
 
   return (
     <motion.div 
-      style={{ x, y, rotate, scale, opacity, zIndex: total - index }} 
-      className="absolute inset-0 origin-bottom-left w-full h-full p-[2px] rounded-[2rem]"
+      style={{ x, y, scale, rotateZ, opacity, filter, zIndex: total - index }} 
+      className="absolute inset-0 origin-center w-full h-full will-change-transform"
     >
-      {/* 1. L'AURA PLASMA (CORRECTION DÉFINITIVE DU CUTOFF) */}
-      {/* On utilise un maskImage radial pour s'assurer que la lumière meurt en douceur sans jamais toucher les bords rectangulaires */}
-      <div 
-        className="absolute -inset-[100px] opacity-80 blur-[80px] pointer-events-none z-0"
-        style={{ 
-          maskImage: 'radial-gradient(circle at center, black 30%, transparent 70%)', 
-          WebkitMaskImage: 'radial-gradient(circle at center, black 30%, transparent 70%)' 
-        }}
-      >
-        {/* On remplace le overflow-hidden par des ronds parfaits (rounded-full) */}
-        <div 
-          className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0%,rgba(0,242,255,0.8)_20%,transparent_50%,rgba(138,43,226,0.8)_70%,transparent_100%)] animate-spin rounded-full"
-          style={{ animationDuration: '4s' }}
-        />
-        <div 
-          className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0%,rgba(138,43,226,0.8)_20%,transparent_50%,rgba(0,242,255,0.8)_70%,transparent_100%)] animate-spin rounded-full"
-          style={{ animationDuration: '7s', animationDirection: 'reverse' }}
-        />
-      </div>
-
-      {/* 2. LE CORPS DE LA CARTE */}
-      <div className="relative w-full h-full bg-[#020202] rounded-[2rem] overflow-hidden border border-white/10 shadow-[inset_0_0_60px_rgba(0,0,0,1)] flex flex-col justify-end z-10">
+      {/* CADRE ACRYLIQUE PREMIUM */}
+      <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-[#020202] border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-end group">
         
-        {/* L'image de la soirée */}
-        <img 
-          src={src} 
-          alt={`Archive Trap House ${index}`} 
-          className="absolute inset-0 w-full h-full object-cover opacity-90 scale-105" 
-        />
-        
-        {/* LA FUMÉE INTERNE PROFONDE */}
-        <motion.div 
-          animate={{ y: ["0%", "-15%"], x: ["-5%", "5%"] }}
-          transition={{ repeat: Infinity, duration: 6, ease: "linear", repeatType: "reverse" }}
-          className="absolute inset-0 opacity-50 mix-blend-screen pointer-events-none z-0"
-          style={{ backgroundImage: "url('/assets/smoke.png')", backgroundSize: "cover", backgroundPosition: "center" }}
-        />
-
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,black_100%)] opacity-60 pointer-events-none z-10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none z-10" />
-
-        {/* TEXTE */}
-        <div className="relative z-20 p-8 md:p-10 pointer-events-none">
-          <p className="font-syne font-bold tracking-[0.4em] text-[#00F2FF] text-[10px] uppercase mb-3 drop-shadow-[0_0_10px_rgba(0,242,255,0.8)] flex items-center gap-3">
-            <span className="w-2 h-2 rounded-full bg-[#00F2FF] shadow-[0_0_8px_#00F2FF] animate-pulse" />
-            Dossier Classé
-          </p>
-          <h3 className="font-syne font-black text-white text-4xl md:text-5xl tracking-[0.2em] uppercase drop-shadow-2xl">
-            VOL. 0{index + 1}
-          </h3>
+        {/* Image de fond avec effet de Parallax interne */}
+        <div className="absolute inset-0 w-full h-full">
+          <img 
+            src={src} 
+            alt={`Trap House Archive ${index}`} 
+            className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-1000 ease-out opacity-80" 
+          />
         </div>
 
-        {/* 💥 LA FUMÉE SUR LA CARTE EN BAS 💥 */}
+        {/* CALQUE D'OMBRE DE PROFONDEUR */}
         <motion.div 
-          animate={{ y: ["10%", "-10%"], opacity: [0.4, 0.8] }}
-          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", repeatType: "reverse" }}
-          className="absolute -bottom-10 -left-10 -right-10 h-[60%] mix-blend-screen pointer-events-none z-30"
-          style={{ backgroundImage: "url('/assets/smoke.png')", backgroundSize: "cover", backgroundPosition: "top" }}
+          style={{ opacity: depthShadow }} 
+          className="absolute inset-0 bg-[#020202] pointer-events-none z-30"
         />
+
+        {/* OVERLAYS CINÉMATIQUES (Gradients & Lumières) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#010101] via-[#010101]/60 to-transparent z-10" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,153,255,0.05)_0%,transparent_30%)] z-10" />
+
+        {/* TEXTE & MÉTADONNÉES */}
+        <div className="relative z-20 p-8 md:p-12 w-full">
+          <div className="flex justify-between items-end w-full border-b border-white/10 pb-6 mb-6">
+            <div>
+              <p className="font-syne font-bold tracking-[0.4em] text-[#0099FF] text-[10px] uppercase mb-2 flex items-center gap-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#0099FF] animate-pulse shadow-[0_0_10px_#0099FF]" />
+                Archive
+              </p>
+              <h3 className="font-syne font-black text-white text-5xl md:text-6xl tracking-[0.1em] uppercase leading-none drop-shadow-2xl">
+                VOL. <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20">0{index + 1}</span>
+              </h3>
+            </div>
+            <div className="text-right hidden md:block">
+              <p className="font-syne text-white/30 text-[9px] tracking-[0.3em] uppercase mb-1">Status</p>
+              <p className="font-syne text-[#0099FF] text-[10px] font-bold tracking-[0.2em] uppercase">Classified</p>
+            </div>
+          </div>
+          <p className="font-manrope text-white/50 text-sm max-w-[90%] md:max-w-[80%] leading-relaxed">
+            L'apogée de l'énergie underground. Une nuit classée secret défense où les règles ont été réécrites dans l'obscurité.
+          </p>
+        </div>
+
+        {/* ÉCLAIRAGE DE TRANCHE */}
+        <div className="absolute inset-0 border border-white/5 rounded-[2rem] pointer-events-none z-40" />
+        <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-[#0099FF]/60 to-transparent z-40 opacity-50" />
       </div>
     </motion.div>
   );
@@ -131,13 +138,12 @@ const StackedCard = ({ src, index, total, progress }: { src: string, index: numb
 
 
 export default function Home() {
-  const springConfig = { stiffness: 70, damping: 20, mass: 0.2 };
+  const springConfig = { stiffness: 60, damping: 20, mass: 0.5 }; // Inertie lourde de base
 
   // 1. PROGRESS SCROLL GLOBAL
   const { scrollYProgress: globalScroll } = useScroll();
   const smoothGlobalScroll = useSpring(globalScroll, springConfig);
 
-  // Correction flou fond
   const backgroundBlurOpacity = useTransform(smoothGlobalScroll, [0, 1], [0, 0.8]);
 
   // ==========================================================================
@@ -160,7 +166,7 @@ export default function Home() {
   const text3Y = useTransform(smoothHeroScroll, [0.75, 0.95], [40, 0]);
 
   // ==========================================================================
-  // SECTION 2 : VITRINE (DECK OF CARDS AVEC FORTE INERTIE)
+  // SECTION 2 : VITRINE (DECK OF CARDS AVEC PHYSIQUE LOURDE)
   // ==========================================================================
   const vitrineRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: vitrineScroll } = useScroll({
@@ -168,28 +174,28 @@ export default function Home() {
     offset: ["start start", "end end"],
   });
 
-  const smoothVitrineScroll = useSpring(vitrineScroll, { stiffness: 80, damping: 25, mass: 0.6, restDelta: 0.001 });
+  // Inertie très spécifique pour la vitrine : Lourd et précis
+  const smoothVitrineScroll = useSpring(vitrineScroll, { stiffness: 70, damping: 25, mass: 0.8, restDelta: 0.0001 });
 
-  // ANIMATION DE FIN CINÉMATIQUE
-  const vitrineOpacity = useTransform(smoothVitrineScroll, [0.85, 1], [1, 0]);
-  const vitrineScale = useTransform(smoothVitrineScroll, [0.85, 1], [1, 0.9]);
+  const vitrineOpacity = useTransform(smoothVitrineScroll, [0.9, 1], [1, 0]);
+  const vitrineScale = useTransform(smoothVitrineScroll, [0.9, 1], [1, 0.95]);
 
   return (
-    <div className="w-full relative bg-black">
+    <div className="w-full relative bg-[#010101]">
       <CustomCursor />
       
       {/* PROGRESS SCROLL INDICATOR */}
       <motion.div 
-        className="fixed top-0 left-0 h-1 bg-[#00F2FF] z-[999] origin-left shadow-[0_0_15px_#00F2FF]"
+        className="fixed top-0 left-0 h-[2px] bg-[#00F2FF] z-[999] origin-left shadow-[0_0_20px_#00F2FF]"
         style={{ scaleX: smoothGlobalScroll, width: "100%" }}
       />
 
-      {/* 🌪️ FUMÉE 3D VOLUMÉTRIQUE */}
+      {/* 🌪️ FUMÉE / NEURAL NETWORK WEBGL */}
       <SmokeBackground />
 
       {/* 🔥 CALQUE DE FLOU DYNAMIQUE */}
       <motion.div
-        className="fixed inset-0 z-[1] pointer-events-none backdrop-blur-3xl bg-black/40"
+        className="fixed inset-0 z-[1] pointer-events-none backdrop-blur-[60px] bg-[#010101]/20"
         style={{ opacity: backgroundBlurOpacity }}
       />
 
@@ -197,7 +203,7 @@ export default function Home() {
         
         {/* NAVBAR */}
         <motion.nav initial={{ y: -50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.5 }} className="fixed top-0 left-0 w-full z-[100] flex justify-center py-8 px-4 pointer-events-none">
-          <div className="pointer-events-auto flex gap-6 md:gap-12 px-8 md:px-12 py-4 rounded-full border border-white/5 bg-black/20 backdrop-blur-2xl shadow-2xl">
+          <div className="pointer-events-auto flex gap-6 md:gap-12 px-8 md:px-12 py-4 rounded-full border border-white/5 bg-[#020202]/50 backdrop-blur-2xl shadow-2xl">
             {NAV_LINKS.map((item) => (
               <a 
                 key={item.id} 
@@ -251,7 +257,7 @@ export default function Home() {
 
             <motion.div style={{ opacity: text3Opacity, y: text3Y }} className="absolute max-w-3xl text-center flex flex-col items-center pointer-events-none z-30">
               <div className="w-[1px] h-20 bg-gradient-to-b from-[#00F2FF] to-transparent mb-8" />
-              <p className="font-manrope text-white/70 text-lg md:text-xl leading-relaxed font-light drop-shadow-xl bg-black/20 backdrop-blur-md p-6 rounded-2xl">
+              <p className="font-manrope text-white/70 text-lg md:text-xl leading-relaxed font-light drop-shadow-xl bg-black/40 backdrop-blur-xl p-8 rounded-[2rem] border border-white/5">
                 Nous créons plus que des soirées : nous concevons des moments d'exclusivité où la lumière fend l'obscurité, et où l'accès est un privilège absolu.
               </p>
             </motion.div>
@@ -266,27 +272,28 @@ export default function Home() {
           id="vitrine" 
           ref={vitrineRef} 
           className="relative w-full bg-transparent z-20"
-          style={{ height: `${VITRINE_IMAGES.length * 100}vh` }}
+          // La hauteur définit la durée du scroll. On donne 120vh par carte pour avoir le temps de les admirer.
+          style={{ height: `${VITRINE_IMAGES.length * 120}vh` }} 
         >
           <motion.div 
             style={{ opacity: vitrineOpacity, scale: vitrineScale }}
-            className="sticky top-0 w-full h-[100dvh] flex flex-col md:flex-row items-center justify-center md:justify-between px-6 md:px-[10vw] overflow-hidden"
+            className="sticky top-0 w-full h-[100dvh] flex flex-col xl:flex-row items-center justify-center xl:justify-between px-6 md:px-[10vw] overflow-hidden"
           >
             
             {/* PARTIE GAUCHE : TEXTE */}
-            <div className="w-full md:w-1/3 flex flex-col justify-center mb-10 md:mb-0 z-30 pointer-events-none">
+            <div className="w-full xl:w-1/3 flex flex-col justify-center mb-16 xl:mb-0 z-30 pointer-events-none text-center xl:text-left mt-20 xl:mt-0">
               <span className="font-syne text-[#00F2FF] text-[10px] tracking-[0.4em] font-bold mb-4 uppercase drop-shadow-[0_0_10px_#00F2FF]">Exploration</span>
               <h2 className="text-5xl md:text-7xl lg:text-8xl font-black font-syne uppercase tracking-widest text-white leading-none mb-6">
-                La <br/><span className="text-[#00F2FF] text-glow">Vitrine</span>
+                La <br className="hidden xl:block"/><span className="text-[#00F2FF] text-glow">Vitrine</span>
               </h2>
-              <div className="w-12 h-[2px] bg-[#00F2FF] mb-6 shadow-[0_0_10px_#00F2FF]" />
-              <p className="font-manrope text-white/60 text-lg max-w-xs drop-shadow-md">
-                Glissez à travers l'obscurité pour découvrir les archives classées de nos soirées légendaires.
+              <div className="w-12 h-[2px] bg-[#00F2FF] mb-6 shadow-[0_0_10px_#00F2FF] mx-auto xl:mx-0" />
+              <p className="font-manrope text-white/50 text-base md:text-lg max-w-md mx-auto xl:mx-0 drop-shadow-md">
+                Glissez à travers l'obscurité pour découvrir les archives classées de nos événements légendaires. Seuls les initiés savent.
               </p>
             </div>
 
             {/* PARTIE DROITE : LE PAQUET DE CARTES EMPILÉES */}
-            <div className="w-full md:w-[40vw] h-[55vh] md:h-[70vh] relative perspective-1000 z-10 pointer-events-none">
+            <div className="w-full md:w-[60vw] xl:w-[35vw] h-[60vh] xl:h-[75vh] relative perspective-1000 z-10 pointer-events-none">
               {VITRINE_IMAGES.map((src, i) => (
                 <StackedCard 
                   key={i} 
@@ -302,69 +309,47 @@ export default function Home() {
         </section>
 
         {/* =========================================================
-            SECTION 3 : RÉSEAUX SOCIAUX (KINETIC TYPOGRAPHY)
+            SECTION 3 : RÉSEAUX SOCIAUX 
         ========================================================= */}
         <section id="reseaux" className="relative w-full min-h-[80vh] flex flex-col items-center justify-center overflow-hidden bg-transparent py-32 z-20">
           
-          {/* Lueur de fond subtile pour faire ressortir la zone au milieu de la fumée */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-[#00F2FF]/5 blur-[120px] rounded-full pointer-events-none z-0" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-[#0099FF]/5 blur-[120px] rounded-full pointer-events-none z-0" />
 
-          {/* 1. TEXTE GÉANT EN ARRIÈRE-PLAN (Défilement vers la gauche) */}
+          {/* TEXTES DÉFILANTS */}
           <div className="absolute top-1/4 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-20 -rotate-2 scale-110 z-0">
-            <motion.div
-              animate={{ x: ["0%", "-50%"] }}
-              transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
-              className="flex gap-8"
-            >
+            <motion.div animate={{ x: ["0%", "-50%"] }} transition={{ repeat: Infinity, ease: "linear", duration: 30 }} className="flex gap-8">
               {Array(4).fill("TRAP HOUSE EVENT — ").map((text, i) => (
-                <span key={i} className="text-[8rem] md:text-[12rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '2px rgba(255,255,255,0.5)' }}>
-                  {text}
-                </span>
+                <span key={i} className="text-[8rem] md:text-[12rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '2px rgba(255,255,255,0.3)' }}>{text}</span>
               ))}
             </motion.div>
           </div>
 
-          {/* 2. TEXTE GÉANT EN ARRIÈRE-PLAN (Défilement vers la droite) */}
           <div className="absolute bottom-1/4 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-20 -rotate-2 scale-110 z-0">
-            <motion.div
-              animate={{ x: ["-50%", "0%"] }}
-              transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
-              className="flex gap-8"
-            >
+            <motion.div animate={{ x: ["-50%", "0%"] }} transition={{ repeat: Infinity, ease: "linear", duration: 40 }} className="flex gap-8">
               {Array(4).fill("REJOIGNEZ LE CERCLE — ").map((text, i) => (
-                <span key={i} className="text-[8rem] md:text-[12rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '2px #00F2FF' }}>
-                  {text}
-                </span>
+                <span key={i} className="text-[8rem] md:text-[12rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '2px #00F2FF' }}>{text}</span>
               ))}
             </motion.div>
           </div>
 
-          {/* 3. BOUTONS INTERACTIFS (Premier plan) */}
           <div className="relative z-10 flex flex-col items-center">
-            
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex flex-col items-center mb-16">
-              <span className="font-syne text-[#00F2FF] text-[10px] tracking-[0.4em] font-bold mb-4 uppercase drop-shadow-[0_0_10px_#00F2FF]">
-                Connectivité
-              </span>
+              <span className="font-syne text-[#00F2FF] text-[10px] tracking-[0.4em] font-bold mb-4 uppercase drop-shadow-[0_0_10px_#00F2FF]">Connectivité</span>
               <h2 className="text-3xl md:text-5xl font-black font-syne uppercase tracking-widest text-white drop-shadow-lg text-center">
                 Rejoignez le <span className="text-[#00F2FF] text-glow">Cercle</span>
               </h2>
             </motion.div>
             
             <div className="flex flex-col md:flex-row gap-8 md:gap-12">
-              
-              {/* Carte Instagram (Seule pour l'instant) */}
               <motion.a 
                 href="#" 
                 initial={{ opacity: 0, y: 50 }} 
                 whileInView={{ opacity: 1, y: 0 }} 
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
-                className="group relative w-[80vw] md:w-96 h-32 flex items-center justify-center rounded-[2rem] border border-white/10 bg-black/60 backdrop-blur-xl overflow-hidden interactive-element transition-all duration-500 hover:border-[#00F2FF]/50 hover:shadow-[0_0_30px_rgba(0,242,255,0.2)] hover:scale-105"
+                className="group relative w-[80vw] md:w-96 h-32 flex items-center justify-center rounded-[2rem] border border-white/10 bg-[#020202]/80 backdrop-blur-xl overflow-hidden interactive-element transition-all duration-500 hover:border-[#00F2FF]/50 hover:shadow-[0_0_40px_rgba(0,242,255,0.15)] hover:scale-105"
               >
-                {/* Lueur interne au survol */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,242,255,0.15)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
                 <div className="relative flex items-center gap-6 z-10">
                   <div className="p-4 rounded-full bg-white/5 group-hover:bg-[#00F2FF]/10 transition-colors duration-300">
                     <Instagram size={32} className="text-white group-hover:text-[#00F2FF] transition-colors duration-300 drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]" />
@@ -373,11 +358,8 @@ export default function Home() {
                     Instagram
                   </span>
                 </div>
-
-                {/* Barre de chargement stylisée en bas */}
                 <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[#00F2FF] to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out origin-center" />
               </motion.a>
-
             </div>
           </div>
         </section>
@@ -385,7 +367,6 @@ export default function Home() {
         {/* SECTION 4 : VIP */}
         <section id="vip" className="relative w-full py-32 md:py-48 px-6 bg-transparent z-20">
           <div className="max-w-7xl mx-auto">
-            
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-24 text-center flex flex-col items-center">
               <Lock className="w-8 h-8 text-[#00F2FF] mb-6 drop-shadow-[0_0_10px_#00F2FF]" />
               <h2 className="text-3xl md:text-5xl font-black font-syne uppercase tracking-widest text-white mb-4 drop-shadow-lg">
@@ -394,40 +375,34 @@ export default function Home() {
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-              
-              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-3xl border border-white/5 overflow-hidden group bg-black/40 shadow-2xl backdrop-blur-sm">
+              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-[2rem] border border-white/5 overflow-hidden group bg-[#020202]/60 shadow-2xl backdrop-blur-md">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#00F2FF]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <div className="relative z-20 flex flex-col items-center p-8 text-center pointer-events-none">
-                  <h3 className="text-3xl md:text-5xl font-black font-syne text-white tracking-widest mb-4">
-                    TRAP HOUSE <br/><span className="text-white/20">SHOP</span>
-                  </h3>
+                  <h3 className="text-3xl md:text-5xl font-black font-syne text-white tracking-widest mb-4">TRAP HOUSE <br/><span className="text-white/20">SHOP</span></h3>
                   <p className="font-manrope text-white/50 text-sm mb-12 max-w-xs">Merchandising exclusif. Le style de la nuit, réservé à nos membres.</p>
-                  <div className="px-8 py-4 rounded-full bg-black/50 border border-white/10 group-hover:border-[#00F2FF] transition-all duration-300 shadow-[0_0_30px_rgba(0,242,255,0)] group-hover:shadow-[0_0_30px_rgba(0,242,255,0.2)]">
+                  <div className="px-8 py-4 rounded-full bg-black/50 border border-white/10 group-hover:border-[#00F2FF] transition-all duration-300">
                     <p className="text-white/50 group-hover:text-[#00F2FF] font-syne text-[10px] tracking-[0.4em] font-bold uppercase transition-colors">Coming Soon</p>
                   </div>
                 </div>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-3xl border border-white/5 overflow-hidden group bg-black/40 shadow-2xl backdrop-blur-sm">
+              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} whileHover={{ scale: 1.02 }} className="interactive-element relative h-[500px] flex flex-col items-center justify-center rounded-[2rem] border border-white/5 overflow-hidden group bg-[#020202]/60 shadow-2xl backdrop-blur-md">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#00F2FF]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <div className="relative z-20 flex flex-col items-center p-8 text-center pointer-events-none">
-                  <h3 className="text-3xl md:text-5xl font-black font-syne text-white tracking-widest mb-4">
-                    RÉSERVATIONS <br/><span className="text-[#00F2FF] text-glow">VIP</span>
-                  </h3>
+                  <h3 className="text-3xl md:text-5xl font-black font-syne text-white tracking-widest mb-4">RÉSERVATIONS <br/><span className="text-[#00F2FF] text-glow">VIP</span></h3>
                   <p className="font-manrope text-white/50 text-sm mb-12 max-w-xs">Garantissez votre table, accédez aux zones privées et profitez d'un service premium.</p>
-                  <div className="px-8 py-4 rounded-full bg-black/50 border border-white/10 group-hover:border-[#00F2FF] transition-all duration-300 shadow-[0_0_30px_rgba(0,242,255,0)] group-hover:shadow-[0_0_30px_rgba(0,242,255,0.2)]">
+                  <div className="px-8 py-4 rounded-full bg-black/50 border border-white/10 group-hover:border-[#00F2FF] transition-all duration-300">
                     <p className="text-white/50 group-hover:text-[#00F2FF] font-syne text-[10px] tracking-[0.4em] font-bold uppercase transition-colors">Coming Soon</p>
                   </div>
                 </div>
               </motion.div>
-
             </div>
           </div>
         </section>
 
         {/* FOOTER */}
-        <footer className="relative w-full py-16 flex flex-col items-center bg-black/30 border-t border-white/5 z-20">
-          <h2 className="font-syne font-black tracking-[0.5em] text-xl md:text-2xl text-white/30 mb-8 text-glow leading-none">TRAP HOUSE</h2>
+        <footer className="relative w-full py-16 flex flex-col items-center bg-[#010101]/80 border-t border-white/5 z-20">
+          <h2 className="font-syne font-black tracking-[0.5em] text-xl md:text-2xl text-white/20 mb-8 text-glow leading-none">TRAP HOUSE</h2>
           <p className="text-white/20 text-[8px] md:text-[10px] font-syne uppercase tracking-[0.3em] text-center px-4 drop-shadow-md">
             © {new Date().getFullYear()} TRAP HOUSE EVENT. TOUS DROITS RÉSERVÉS.
           </p>

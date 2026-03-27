@@ -5,7 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-//  SHADERS — "ELECTRIC NEURAL NETWORK" (AVEC INERTIE DES FLUIDES & PROFONDEUR)
+//  SHADERS — "FUMÉE ÉLECTRIQUE"
 // ═══════════════════════════════════════════════════════════════════════════════
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -18,171 +18,123 @@ const vertexShader = /* glsl */ `
 const fragmentShader = /* glsl */ `
   precision highp float;
 
+  uniform vec2 uResolution;
   uniform float uTime;
   uniform float uScroll;
-  uniform float uScrollVelocity; // NOUVEAU : La force cinétique du scroll
-  uniform vec2  uResolution;
 
   varying vec2 vUv;
 
-  // ── Palette (Fond Bleu Nuit, Centre Marine, Crêtes Bleu Électrique) ──
-  const vec3 C_BG     = vec3(0.01, 0.02, 0.06);   // #03050F
-  const vec3 C_CORE   = vec3(0.05, 0.15, 0.45);   // #0D2673
-  const vec3 C_ENERGY = vec3(0.00, 0.60, 1.00);   // #0099FF
-
-  // ── 1. GÉNÉRATEURS DE BRUIT ──
-  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
-  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
-
-  float snoise(vec3 v) {
-    const vec2  C = vec2(1.0/6.0, 1.0/3.0);
-    const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
-    vec3 i  = floor(v + dot(v, C.yyy));
-    vec3 x0 = v - i + dot(i, C.xxx);
-    vec3 g = step(x0.yzx, x0.xyz);
-    vec3 l = 1.0 - g;
-    vec3 i1 = min(g.xyz, l.zxy);
-    vec3 i2 = max(g.xyz, l.zxy);
-    vec3 x1 = x0 - i1 + C.xxx;
-    vec3 x2 = x0 - i2 + C.yyy;
-    vec3 x3 = x0 - D.yyy;
-    i = mod289(i);
-    vec4 p = permute(permute(permute(
-               i.z + vec4(0.0, i1.z, i2.z, 1.0))
-             + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-             + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-    float n_ = 0.142857142857;
-    vec3  ns = n_ * D.wyz - D.xzx;
-    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-    vec4 x_ = floor(j * ns.z);
-    vec4 y_ = floor(j - 7.0 * x_);
-    vec4 x = x_ *ns.x + ns.yyyy;
-    vec4 y = y_ *ns.x + ns.yyyy;
-    vec4 h = 1.0 - abs(x) - abs(y);
-    vec4 b0 = vec4(x.xy, y.xy);
-    vec4 b1 = vec4(x.zw, y.zw);
-    vec4 s0 = floor(b0)*2.0 + 1.0;
-    vec4 s1 = floor(b1)*2.0 + 1.0;
-    vec4 sh = -step(h, vec4(0.0));
-    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
-    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
-    vec3 p0 = vec3(a0.xy, h.x);
-    vec3 p1 = vec3(a0.zw, h.y);
-    vec3 p2 = vec3(a1.xy, h.z);
-    vec3 p3 = vec3(a1.zw, h.w);
-    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
-    p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-    m = m * m;
-    return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+  // Fonction de hachage pseudo-aléatoire
+  float hash(vec2 p) {
+      p = fract(p * vec2(234.34, 435.345));
+      p += dot(p, p + 34.23);
+      return fract(p.x * p.y);
   }
 
-  // ── 2. FRACTALE TRANCHANTE ──
-  float ridgedFBM(vec3 p) {
-    float f = 0.0;
-    float amp = 0.5;
-    float weight = 1.0;
-    
-    for (int i = 0; i < 5; i++) {
-      float n = 1.0 - abs(snoise(p)); 
-      n = pow(n, 2.0); 
-      f += amp * n * weight;
-      weight = clamp(n * 2.0, 0.0, 1.0); 
-      p *= 2.0;
-      amp *= 0.5;
-    }
-    return f;
+  // Bruit de base (Value Noise) interpolé
+  float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f); 
+
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+
+      return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+
+  // Mouvement Brownien Fractionnaire (FBM)
+  float fbm(vec2 p) {
+      float v = 0.0;
+      float a = 0.5;
+      vec2 shift = vec2(100.0);
+      mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+      for (int i = 0; i < 5; ++i) {
+          v += a * noise(p);
+          p = rot * p * 2.0 + shift;
+          a *= 0.5;
+      }
+      return v;
   }
 
   void main() {
-    vec2 uv = vUv;
-    float aspect = uResolution.x / uResolution.y;
-    vec2 st = (uv - 0.5) * vec2(aspect, 1.0);
+      vec2 uv = vUv;
+      uv.x *= uResolution.x / uResolution.y;
 
-    // Temps de base très lent pour contraster avec la vitesse du scroll
-    float t = uTime * 0.12; 
-    
-    // LA PHYSIQUE DU SCROLL (Réalité vs Superficiel)
-    // 1. Déplacement en profondeur (On traverse la matière, axe Z)
-    float scrollDepth = uScroll * 1.5; 
-    // 2. Déplacement vertical classique (Axe Y)
-    float scrollY = uScroll * 0.4;     
+      // Amplification du scroll pour la fumée
+      float scrollFx = uScroll * 1.2; 
 
-    // 3. Déformation Cinétique (Drag Force)
-    // Quand l'utilisateur scrolle vite, la matière s'étire verticalement
-    // L'effet est plus fort au centre que sur les bords pour créer un appel d'air 3D
-    float drag = uScrollVelocity * 0.003;
-    vec2 warpedSt = st;
-    warpedSt.y -= drag * (1.2 - length(st)); 
+      // 1. Déplacement de base (haut/bas) lié au temps ET au scroll
+      vec2 movement = vec2(uTime * 0.02, uTime * -0.15 + scrollFx);
+      vec2 p = uv * 3.0 + movement;
 
-    // Injection des coordonnées physiques dans le moteur 3D
-    vec3 p = vec3(warpedSt * 3.5, t + scrollDepth);
+      // 2. Déformation (Domain Warping) : La fumée tourbillonne au scroll
+      vec2 q = vec2(0.0);
+      q.x = fbm(p + vec2(0.0, uTime * 0.05 + scrollFx * 0.5));
+      q.y = fbm(p + vec2(1.0, uTime * 0.02 + scrollFx * 0.3));
 
-    vec3 warp = vec3(
-      ridgedFBM(p + vec3(0.0, t * 0.3, 0.0)),
-      ridgedFBM(p + vec3(4.3, -t * 0.3, 1.2)),
-      0.0
-    );
+      vec2 r = vec2(0.0);
+      r.x = fbm(p + 1.0 * q + vec2(1.7, 9.2) + uTime * 0.15 + scrollFx * 0.8);
+      r.y = fbm(p + 1.0 * q + vec2(8.3, 2.8) + uTime * 0.12 + scrollFx * 0.6);
 
-    // Réseau de Premier plan (Réagit fortement au déplacement vertical)
-    float network = ridgedFBM(p + warp * 0.5 - vec3(0.0, scrollY, 0.0));
-    
-    // Réseau d'Arrière-plan (Bouge différemment pour créer un Parallaxe Massif)
-    float bgNetwork = ridgedFBM(p * 1.5 - vec3(t * 0.5, scrollY * 1.5, scrollDepth * 0.5)) * 0.5;
+      float f = fbm(p + r);
 
-    // ── COLOR GRADING ──
-    vec3 col = C_BG;
+      // Couleurs de la fumée
+      vec3 color = mix(vec3(0.01, 0.02, 0.08), vec3(0.04, 0.08, 0.25), clamp(f * f * 4.0, 0.0, 1.0));
+      color = mix(color, vec3(0.08, 0.15, 0.4), clamp(length(q), 0.0, 1.0));
+      color = mix(color, vec3(0.12, 0.2, 0.5), clamp(length(r.x), 0.0, 1.0));
 
-    float aura = smoothstep(0.3, 1.2, network + bgNetwork);
-    col = mix(col, C_CORE, aura * 0.85);
+      color = (f * f * f + 0.6 * f * f + 0.5 * f) * color;
 
-    // Le flash cinétique : La matière s'illumine très légèrement quand elle subit un "drag" fort
-    float kineticFlash = clamp(abs(uScrollVelocity) * 0.015, 0.0, 0.3);
-    
-    float sparks = pow(smoothstep(0.8, 1.4, network), 2.5);
-    col += C_ENERGY * (sparks * 3.0 + kineticFlash * aura); 
+      // --- ÉLECTRICITÉ ---
+      // L'électricité bouge encore plus vite pour garder l'effet de profondeur (parallaxe)
+      vec2 ep = uv * 4.0 + vec2(uTime * 0.1, uTime * -0.4 + (scrollFx * 1.8));
+      float eNoise = fbm(ep + r * 1.5 - uTime * 0.6);
+      
+      float ridge = abs(eNoise - 0.5);
+      float electricity = 0.005 / (ridge + 0.005);
+      
+      float mask = fbm(p * 3.0 + uTime);
+      float flash = pow(sin(uTime * 5.0 + f * 12.0) * 0.5 + 0.5, 4.0);
+      electricity *= smoothstep(0.4, 0.7, mask) * flash;
 
-    float dist = length(uv - 0.5);
-    float vignette = smoothstep(0.8, 0.2, dist);
-    col *= vignette;
+      vec3 elecColor = vec3(0.4, 0.8, 1.0); 
+      color += elecColor * electricity;
 
-    gl_FragColor = vec4(col, 1.0);
+      // Vignette
+      vec2 screenCenter = vUv - 0.5;
+      float vignette = 1.0 - dot(screenCenter, screenCenter) * 1.5;
+      color *= clamp(vignette, 0.0, 1.0);
+
+      gl_FragColor = vec4(color, 1.0);
   }
 `;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-//  COMPOSANT REACT (Moteur Physique d'Inertie)
+//  COMPOSANT REACT
 // ═══════════════════════════════════════════════════════════════════════════════
-function ElectricNetwork() {
+function ElectricSmokeLayer() {
   const matRef = useRef<THREE.ShaderMaterial>(null);
   const { size, viewport } = useThree();
 
-  // Variables physiques pour l'inertie
   const scrollTarget = useRef(0);
   const scrollCurrent = useRef(0);
-  const lastScrollY = useRef(0);
-  
-  // NOUVEAU : Traqueur de vélocité
-  const scrollVelocity = useRef(0);
 
   useEffect(() => {
-    // Initialisation
-    lastScrollY.current = window.scrollY;
-
     const onScroll = () => { 
-      scrollTarget.current = window.scrollY * 0.0005; // Facteur d'échelle ajusté
+      // Multiplicateur à ajuster pour définir la vitesse de déplacement au scroll
+      scrollTarget.current = window.scrollY * 0.0015; 
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const uniforms = useMemo(() => ({
-    uTime:           { value: 0 },
-    uScroll:         { value: 0 },
-    uScrollVelocity: { value: 0 },
-    uResolution:     { value: new THREE.Vector2(1, 1) },
+    uTime:       { value: 0 },
+    uScroll:     { value: 0 },
+    uResolution: { value: new THREE.Vector2(1, 1) },
   }), []);
 
   const material = useMemo(() => new THREE.ShaderMaterial({
@@ -195,21 +147,12 @@ function ElectricNetwork() {
   useFrame(({ clock }) => {
     if (!matRef.current) return;
 
-    // 1. CALCUL DE LA VITESSE (Vélocité brute)
-    const currentScrollY = window.scrollY;
-    const rawVelocity = currentScrollY - lastScrollY.current;
-    lastScrollY.current = currentScrollY;
-
-    // 2. INERTIE DE VÉLOCITÉ (La vitesse s'estompe doucement, effet ressort)
-    scrollVelocity.current = THREE.MathUtils.lerp(scrollVelocity.current, rawVelocity, 0.08);
-
-    // 3. INERTIE DE POSITION (Mouvement lourd et luxueux)
-    scrollCurrent.current = THREE.MathUtils.lerp(scrollCurrent.current, scrollTarget.current, 0.035);
+    // Interpolation linéaire (lerp) pour un effet "smooth scroll" fluide et naturel
+    scrollCurrent.current = THREE.MathUtils.lerp(scrollCurrent.current, scrollTarget.current, 0.04);
 
     const u = matRef.current.uniforms;
-    u.uTime.value           = clock.elapsedTime;
-    u.uScroll.value         = scrollCurrent.current;
-    u.uScrollVelocity.value = scrollVelocity.current; // Envoi de la vitesse au Shader
+    u.uTime.value       = clock.elapsedTime;
+    u.uScroll.value     = scrollCurrent.current;
     u.uResolution.value.set(size.width, size.height);
   });
 
@@ -223,7 +166,7 @@ function ElectricNetwork() {
 
 export function SmokeBackground() {
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none bg-[#03050F]">
+    <div className="fixed inset-0 z-0 pointer-events-none bg-black">
       <Canvas
         camera={{ position: [0, 0, 1] }}
         dpr={[1, 2]}
@@ -235,7 +178,7 @@ export function SmokeBackground() {
           depth: false,
         }}
       >
-        <ElectricNetwork />
+        <ElectricSmokeLayer />
       </Canvas>
     </div>
   );
