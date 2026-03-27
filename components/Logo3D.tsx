@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import { useGLTF, Float, Environment } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -37,13 +37,14 @@ function OrbitLight({
 
 export function Logo3D() {
   const { scene } = useGLTF("/assets/logo.glb");
+  const clone = useMemo(() => scene.clone(), [scene]);
   const groupRef = useRef<THREE.Group>(null);
   const createdMaterials = useRef<THREE.MeshPhysicalMaterial[]>([]);
 
   useEffect(() => {
     const mats: THREE.MeshPhysicalMaterial[] = [];
 
-    scene.traverse((child) => {
+    clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
 
@@ -57,12 +58,6 @@ export function Logo3D() {
           clearcoatRoughness: 0.08,
         });
 
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach((m) => m.dispose());
-        } else {
-          (mesh.material as THREE.Material).dispose?.();
-        }
-
         mesh.material = mat;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -75,7 +70,7 @@ export function Logo3D() {
     return () => {
       mats.forEach((m) => m.dispose());
     };
-  }, [scene]);
+  }, [clone]);
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
@@ -106,9 +101,11 @@ export function Logo3D() {
       <OrbitLight color="#C8D8F0" intensity={20} radius={6} speed={0.2} yOffset={-1} phase={Math.PI} />
       <OrbitLight color="#00F2FF" intensity={15} radius={4} speed={0.55} yOffset={-3} phase={Math.PI * 0.5} />
       <group ref={groupRef}>
-        <primitive object={scene} scale={5} position={[0, -2, 0]} />
+        <primitive object={clone} scale={5} position={[0, -2, 0]} />
       </group>
       <Environment preset="studio" />
     </Float>
   );
 }
+
+useGLTF.preload("/assets/logo.glb");

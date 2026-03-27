@@ -13,30 +13,38 @@ export const CustomCursor = () => {
   const springY = useSpring(cursorY, { stiffness: 500, damping: 28, mass: 0.2 });
 
   useEffect(() => {
+    let rafId: number | null = null;
+    let currentTarget: HTMLElement | null = null;
+
     const onMove = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
     };
 
     const onOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const hovered =
-        target.tagName === "A" ||
-        target.tagName === "BUTTON" ||
-        !!target.closest(".interactive-element");
+      currentTarget = e.target as HTMLElement;
 
-      if (hovered !== isHovered.current) {
-        isHovered.current = hovered;
-        if (dotRef.current) {
-          dotRef.current.style.width = hovered ? "24px" : "8px";
-          dotRef.current.style.height = hovered ? "24px" : "8px";
-          dotRef.current.style.backgroundColor = hovered
-            ? "rgba(0, 242, 255, 0.5)"
-            : "#ffffff";
-          dotRef.current.style.boxShadow = hovered
-            ? "0 0 20px rgba(0, 242, 255, 0.8)"
-            : "0 0 10px #fff";
-        }
+      if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          if (!currentTarget || typeof currentTarget.closest !== "function") return;
+
+          const hovered = currentTarget.closest("a, button, .interactive-element") !== null;
+
+          if (hovered !== isHovered.current) {
+            isHovered.current = hovered;
+            if (dotRef.current) {
+              dotRef.current.style.width = hovered ? "24px" : "8px";
+              dotRef.current.style.height = hovered ? "24px" : "8px";
+              dotRef.current.style.backgroundColor = hovered
+                ? "rgba(0, 242, 255, 0.5)"
+                : "#ffffff";
+              dotRef.current.style.boxShadow = hovered
+                ? "0 0 20px rgba(0, 242, 255, 0.8)"
+                : "0 0 10px #fff";
+            }
+          }
+        });
       }
     };
 
@@ -45,6 +53,7 @@ export const CustomCursor = () => {
     return () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseover", onOver);
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, [cursorX, cursorY]);
 

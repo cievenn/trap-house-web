@@ -119,18 +119,6 @@ function ElectricSmokeLayer() {
   const matRef = useRef<THREE.ShaderMaterial>(null);
   const { size, viewport } = useThree();
 
-  const scrollTarget = useRef(0);
-  const scrollCurrent = useRef(0);
-
-  useEffect(() => {
-    const onScroll = () => { 
-      // Multiplicateur à ajuster pour définir la vitesse de déplacement au scroll
-      scrollTarget.current = window.scrollY * 0.0015; 
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const uniforms = useMemo(() => ({
     uTime:       { value: 0 },
     uScroll:     { value: 0 },
@@ -154,12 +142,10 @@ function ElectricSmokeLayer() {
   useFrame(({ clock }) => {
     if (!matRef.current) return;
 
-    // Interpolation linéaire (lerp) pour un effet "smooth scroll" fluide et naturel
-    scrollCurrent.current = THREE.MathUtils.lerp(scrollCurrent.current, scrollTarget.current, 0.04);
-
     const u = matRef.current.uniforms;
     u.uTime.value       = clock.elapsedTime;
-    u.uScroll.value     = scrollCurrent.current;
+    // Lenis gère déjà le lissage du scroll, on le lit de façon parfaitement synchronisée avec la rAF
+    u.uScroll.value     = window.scrollY * 0.0015;
     u.uResolution.value.set(size.width, size.height);
   });
 
