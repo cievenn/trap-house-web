@@ -16,7 +16,7 @@ const vertexShader = /* glsl */ `
 `;
 
 const fragmentShader = /* glsl */ `
-  precision highp float;
+  precision mediump float;
 
   uniform vec2 uResolution;
   uniform float uTime;
@@ -163,7 +163,7 @@ export function SmokeBackground() {
     <div className="fixed inset-0 z-0 pointer-events-none bg-black">
       <Canvas
         camera={{ position: [0, 0, 1] }}
-        dpr={[1, 2]}
+        dpr={1}
         gl={{
           alpha: false,
           antialias: false,

@@ -36,7 +36,7 @@ export function HeroSection() {
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ repeat: Infinity, duration: 2 }}
-            className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-50 flex flex-col items-center pointer-events-none"
+            className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 opacity-50 flex flex-col items-center pointer-events-none"
           >
             <span className="font-syne text-[8px] tracking-[0.4em] mb-2 uppercase text-[#00F2FF]">Swipe Down</span>
             <ChevronDown className="text-[#00F2FF]" size={16} />
@@ -45,21 +45,21 @@ export function HeroSection() {
 
         <motion.div style={{ opacity: text1Opacity, y: text1Y }} className="absolute max-w-3xl text-center pointer-events-none z-30">
           <p className="font-syne text-[#00F2FF] text-xs tracking-[0.4em] font-bold uppercase mb-4">Chapitre I</p>
-          <h2 className="text-4xl md:text-6xl font-black font-syne uppercase tracking-widest text-white leading-tight drop-shadow-md">
+          <h2 className="text-2xl sm:text-4xl md:text-6xl font-black font-syne uppercase tracking-widest text-white leading-tight drop-shadow-md">
             Oubliez les standards <br /> <span className="text-white/30">de la nuit.</span>
           </h2>
         </motion.div>
 
         <motion.div style={{ opacity: text2Opacity, y: text2Y }} className="absolute max-w-4xl text-center pointer-events-none z-30">
           <p className="font-syne text-[#00F2FF] text-xs tracking-[0.4em] font-bold uppercase mb-4">Chapitre II</p>
-          <h2 className="text-4xl md:text-6xl font-black font-syne uppercase tracking-widest text-white leading-tight drop-shadow-md">
+          <h2 className="text-2xl sm:text-4xl md:text-6xl font-black font-syne uppercase tracking-widest text-white leading-tight drop-shadow-md">
             {"L'énergie de l'underground."} <br /> <span className="text-[#00F2FF] text-glow">{"L'exigence du premium."}</span>
           </h2>
         </motion.div>
 
         <motion.div style={{ opacity: text3Opacity, y: text3Y }} className="absolute max-w-3xl text-center flex flex-col items-center pointer-events-none z-30">
           <div className="w-[1px] h-20 bg-gradient-to-b from-[#00F2FF] to-transparent mb-8" />
-          <p className="font-manrope text-white/70 text-lg md:text-xl leading-relaxed font-light drop-shadow-xl bg-black/40 backdrop-blur-xl p-8 rounded-[2rem] border border-white/5">
+          <p className="font-manrope text-white/70 text-base md:text-xl leading-relaxed font-light drop-shadow-xl bg-black/40 backdrop-blur-xl p-5 md:p-8 rounded-[2rem] border border-white/5">
             {"Nous créons plus que des soirées : nous concevons des moments d'exclusivité où la lumière fend l'obscurité, et où l'accès est un privilège absolu."}
           </p>
         </motion.div>

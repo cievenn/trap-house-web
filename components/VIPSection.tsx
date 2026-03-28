@@ -6,7 +6,7 @@ import { Lock, ShoppingBag, Crown } from "lucide-react";
 
 export function VIPSection() {
   return (
-    <section id="vip" className="relative w-full min-h-screen py-32 md:py-48 px-6 z-20 overflow-hidden">
+    <section id="vip" className="relative w-full min-h-screen py-20 md:py-32 lg:py-48 px-6 z-20 overflow-hidden">
       <div className="max-w-7xl mx-auto relative z-10">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-24 text-center flex flex-col items-center">
           <div className="relative w-20 h-20 flex items-center justify-center mb-8">
@@ -29,9 +29,9 @@ export function VIPSection() {
             whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1, duration: 0.8, type: "spring", bounce: 0.3 }}
-            className="interactive-element relative h-[550px] flex flex-col items-center justify-center rounded-[2.5rem] border border-white/5 overflow-hidden group bg-[#020202] shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-white/10 transition-colors duration-500"
+            className="interactive-element relative h-auto min-h-[400px] sm:min-h-[450px] md:h-[550px] flex flex-col items-center justify-center rounded-[2.5rem] border border-white/5 overflow-hidden group bg-[#020202] shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-white/10 transition-colors duration-500"
           >
-            <svg className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="hidden md:block absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
               <filter id="noise-shop">
                 <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
                 <feColorMatrix type="saturate" values="0" />
@@ -53,15 +53,15 @@ export function VIPSection() {
               <p className="font-manrope text-white/40 text-sm mb-12 max-w-sm leading-relaxed group-hover:text-white/60 transition-colors">
                 {"Merchandising exclusif. Des pièces limitées forgées dans l'esthétique de la nuit. Réservé à l'élite."}
               </p>
-              <div className="relative px-10 py-4 rounded-full bg-white/5 border border-white/10 group-hover:border-[#00F2FF]/80 overflow-hidden transition-all duration-500 cursor-pointer">
+              <div className="relative px-6 sm:px-10 py-4 rounded-full bg-white/5 border border-white/10 group-hover:border-[#00F2FF]/80 overflow-hidden transition-all duration-500 cursor-pointer">
                 <div className="absolute inset-0 bg-[#00F2FF] translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-out" />
-                <p className="relative z-10 text-white/50 group-hover:text-black font-syne text-[11px] tracking-[0.4em] font-black uppercase transition-colors duration-500">Coming Soon</p>
+                <p className="relative z-10 text-white/50 group-hover:text-black font-syne text-[10px] sm:text-[11px] tracking-[0.4em] font-black uppercase transition-colors duration-500">Coming Soon</p>
               </div>
             </div>
-            <div className="absolute top-8 left-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
-            <div className="absolute top-8 left-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
-            <div className="absolute bottom-8 right-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
-            <div className="absolute bottom-8 right-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+            <div className="absolute top-4 left-4 sm:top-8 sm:left-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+            <div className="absolute top-4 left-4 sm:top-8 sm:left-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+            <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+            <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
           </motion.div>
 
           {/* CARTE VIP RÉSERVATIONS */}
@@ -70,9 +70,9 @@ export function VIPSection() {
             whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3, duration: 0.8, type: "spring", bounce: 0.3 }}
-            className="interactive-element relative h-[550px] flex flex-col items-center justify-center rounded-[2.5rem] border border-white/5 overflow-hidden group bg-[#020202] shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-white/10 transition-colors duration-500"
+            className="interactive-element relative h-auto min-h-[400px] sm:min-h-[450px] md:h-[550px] flex flex-col items-center justify-center rounded-[2.5rem] border border-white/5 overflow-hidden group bg-[#020202] shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-white/10 transition-colors duration-500"
           >
-            <svg className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="hidden md:block absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
               <filter id="noise-vip">
                 <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
                 <feColorMatrix type="saturate" values="0" />
@@ -87,21 +87,21 @@ export function VIPSection() {
 
             <div className="relative z-20 flex flex-col items-center p-6 md:p-10 text-center w-full">
               <Crown className="w-12 h-12 text-white/20 mb-8 group-hover:text-[#00F2FF] group-hover:scale-110 transition-all duration-500 drop-shadow-[0_0_20px_rgba(0,242,255,0)] group-hover:drop-shadow-[0_0_20px_rgba(0,242,255,0.8)]" />
-              <h3 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black font-syne text-white tracking-wider mb-6 leading-tight">
+              <h3 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black font-syne text-white tracking-wider md:tracking-widest mb-6 leading-tight">
                 RÉSERVATIONS <span className="text-[#00F2FF] text-glow group-hover:text-white transition-colors duration-500">VIP</span>
               </h3>
               <p className="font-manrope text-white/40 text-sm mb-12 max-w-sm leading-relaxed group-hover:text-white/60 transition-colors">
                 {"Garantissez votre table, accédez aux zones privées et profitez d'un service premium. Le confort dans le chaos."}
               </p>
-              <div className="relative px-10 py-4 rounded-full bg-white/5 border border-white/10 group-hover:border-[#00F2FF]/80 overflow-hidden transition-all duration-500 cursor-pointer">
+              <div className="relative px-6 sm:px-10 py-4 rounded-full bg-white/5 border border-white/10 group-hover:border-[#00F2FF]/80 overflow-hidden transition-all duration-500 cursor-pointer">
                 <div className="absolute inset-0 bg-[#00F2FF] translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-out" />
-                <p className="relative z-10 text-white/50 group-hover:text-black font-syne text-[11px] tracking-[0.4em] font-black uppercase transition-colors duration-500">Coming Soon</p>
+                <p className="relative z-10 text-white/50 group-hover:text-black font-syne text-[10px] sm:text-[11px] tracking-[0.4em] font-black uppercase transition-colors duration-500">Coming Soon</p>
               </div>
             </div>
-            <div className="absolute top-8 right-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
-            <div className="absolute top-8 right-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
-            <div className="absolute bottom-8 left-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
-            <div className="absolute bottom-8 left-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+            <div className="absolute top-4 right-4 sm:top-8 sm:right-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+            <div className="absolute top-4 right-4 sm:top-8 sm:right-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+            <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 w-4 h-[1px] bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
+            <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 w-[1px] h-4 bg-white/20 group-hover:bg-[#00F2FF] transition-colors duration-500" />
           </motion.div>
         </div>
       </div>

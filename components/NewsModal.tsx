@@ -58,7 +58,7 @@ export const NewsModal = ({ isOpen, onClose, data }: { isOpen: boolean; onClose:
                 <p className="text-white/40 tracking-[0.2em] text-xs font-syne font-bold">{data.date}</p>
               </div>
               
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white uppercase tracking-wider mb-8 font-syne leading-[1.1] text-glow relative z-10">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white uppercase tracking-wider mb-8 font-syne leading-[1.1] text-glow relative z-10">
                 {data.title}
               </h2>
               

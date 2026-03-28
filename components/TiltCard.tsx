@@ -41,7 +41,7 @@ export const TiltCard = ({ data, onClick }: { data: NewsType; onClick: () => voi
     <motion.div
       ref={ref} onMouseEnter={handleMouseEnter} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} onClick={onClick}
       style={{ rotateY, rotateX, transformStyle: "preserve-3d" }}
-      className="relative w-full max-w-[320px] mx-auto h-[550px] cursor-pointer group perspective-1000"
+      className="relative w-full max-w-[280px] sm:max-w-[320px] mx-auto h-[450px] sm:h-[550px] cursor-pointer group perspective-1000"
     >
       {/* Lanyard Clip (Le trou d'attache en haut du pass) */}
       <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-16 h-3 bg-black border border-white/20 rounded-full z-20" />

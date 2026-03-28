@@ -46,10 +46,10 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
   const filter = useTransform(progress, (p: number) => {
     const depth = getDepth(p);
     if (depth < 0) {
-      const blurValue = Math.min(Math.pow(Math.abs(depth) * 6, 2), 40);
-      return `blur(${blurValue}px) grayscale(${Math.min(Math.abs(depth) * 100, 100)}%)`;
+      const brightness = Math.max(1 - Math.abs(depth) * 0.4, 0.3);
+      return `brightness(${brightness})`;
     }
-    return "blur(0px) grayscale(0%)";
+    return "brightness(1)";
   });
 
   const depthShadow = useTransform(progress, (p: number) => {
@@ -79,14 +79,14 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
         <div className="absolute inset-0 bg-gradient-to-t from-[#010101] via-[#010101]/60 to-transparent z-10" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,153,255,0.05)_0%,transparent_30%)] z-10" />
 
-        <div className="relative z-20 p-8 md:p-12 w-full">
+        <div className="relative z-20 p-5 sm:p-8 md:p-12 w-full">
           <div className="flex justify-between items-end w-full border-b border-white/10 pb-6 mb-6">
             <div>
               <p className="font-syne font-bold tracking-[0.4em] text-[#0099FF] text-[10px] uppercase mb-2 flex items-center gap-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#0099FF] animate-pulse shadow-[0_0_10px_#0099FF]" />
                 {supertitle}
               </p>
-              <h3 className="font-syne font-black text-white text-5xl md:text-6xl tracking-[0.1em] uppercase leading-none drop-shadow-2xl">
+              <h3 className="font-syne font-black text-white text-3xl sm:text-5xl md:text-6xl tracking-[0.1em] uppercase leading-none drop-shadow-2xl">
                 <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20">{volume}</span>
               </h3>
             </div>
@@ -125,11 +125,11 @@ export function VitrineSection() {
     >
       <motion.div
         style={{ opacity: vitrineOpacity, scale: vitrineScale }}
-        className="sticky top-0 w-full h-[100dvh] flex flex-col xl:flex-row items-center justify-center xl:justify-between px-6 md:px-[10vw] overflow-hidden"
+        className="sticky top-0 w-full h-[100dvh] flex flex-col xl:flex-row items-center justify-center xl:justify-between px-6 md:px-[10vw] 2xl:px-[12vw] overflow-hidden"
       >
-        <div className="w-full xl:w-1/3 flex flex-col justify-center mb-16 xl:mb-0 z-30 pointer-events-none text-center xl:text-left mt-20 xl:mt-0">
+        <div className="w-full xl:w-1/3 flex flex-col justify-center mb-16 xl:mb-0 z-30 pointer-events-none text-center xl:text-left mt-12 sm:mt-20 xl:mt-0">
           <span className="font-syne text-[#00F2FF] text-[10px] tracking-[0.4em] font-bold mb-4 uppercase drop-shadow-[0_0_10px_#00F2FF]">Exploration</span>
-          <h2 className="text-5xl md:text-7xl lg:text-8xl font-black font-syne uppercase tracking-widest text-white leading-none mb-6">
+          <h2 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black font-syne uppercase tracking-widest text-white leading-none mb-6">
             La <br className="hidden xl:block" /><span className="text-[#00F2FF] text-glow">Vitrine</span>
           </h2>
           <div className="w-12 h-[2px] bg-[#00F2FF] mb-6 shadow-[0_0_10px_#00F2FF] mx-auto xl:mx-0" />
@@ -137,7 +137,7 @@ export function VitrineSection() {
             {"Glissez à travers l'obscurité pour découvrir les archives classées de nos événements légendaires. Seuls les initiés savent."}
           </p>
         </div>
-        <div className="w-full md:w-[60vw] xl:w-[35vw] h-[60vh] xl:h-[75vh] relative perspective-1000 z-10 pointer-events-none">
+        <div className="w-full md:w-[60vw] xl:w-[35vw] h-[50vh] sm:h-[60vh] xl:h-[75vh] relative perspective-1000 z-10 pointer-events-none">
           {VITRINE_DATA.map((card, i) => (
             <StackedCard key={i} {...card} index={i} total={VITRINE_DATA.length} progress={smoothVitrineScroll} />
           ))}

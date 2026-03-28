@@ -8,6 +8,9 @@
 @layer base {
   html {
     background-color: var(--color-traphouse-black);
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: none;
   }
   
   body {
@@ -15,6 +18,7 @@
     color: white;
     font-family: var(--font-manrope, 'Manrope'), sans-serif;
     overflow-x: hidden;
+    overscroll-behavior-y: none;
     position: relative;
   }
 }
@@ -26,6 +30,13 @@
 
 .font-syne { font-family: var(--font-syne, 'Syne'), sans-serif; }
 .font-manrope { font-family: var(--font-manrope, 'Manrope'), sans-serif; }
+
+@layer utilities {
+  .section-padding {
+    @apply py-16 px-4 sm:py-20 sm:px-8 md:py-24 md:px-16 px-[5vw] xl:px-[10vw];
+  }
+}
+
 
 .text-glow { 
   text-shadow: 0 0 30px rgba(0, 242, 255, 0.4), 0 0 60px rgba(0, 242, 255, 0.2); 
