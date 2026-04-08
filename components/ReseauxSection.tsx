@@ -10,8 +10,11 @@ export function ReseauxSection() {
       {/* Lueur d'ambiance globale */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-[#00F2FF]/[0.02] blur-[120px] rounded-full pointer-events-none z-0" />
 
-      {/* TEXTES DÉFILANTS — CSS pur (remplace les animations JS Framer Motion) */}
-      <div className="absolute top-1/3 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-30 -rotate-3 scale-110 z-0">
+      {/* Screen-reader accessible text (read once, not 12 times) */}
+      <span className="sr-only">TRAP HOUSE EVENT — REJOIGNEZ LE CERCLE</span>
+
+      {/* TEXTES DÉFILANTS — aria-hidden to prevent screen readers from reading duplicates */}
+      <div aria-hidden="true" className="absolute top-1/3 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-30 -rotate-3 scale-110 z-0">
         <div className="marquee-left flex gap-12">
           {Array(6).fill("TRAP HOUSE EVENT — ").map((text, i) => (
             <span key={`t1-${i}`} className="text-[3rem] sm:text-[6rem] md:text-[10rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.15)' }}>{text}</span>
@@ -19,7 +22,7 @@ export function ReseauxSection() {
         </div>
       </div>
 
-      <div className="absolute bottom-1/3 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-30 -rotate-3 scale-110 z-0">
+      <div aria-hidden="true" className="absolute bottom-1/3 left-0 w-full overflow-hidden whitespace-nowrap pointer-events-none opacity-30 -rotate-3 scale-110 z-0">
         <div className="marquee-right flex gap-12">
           {Array(6).fill("REJOIGNEZ LE CERCLE — ").map((text, i) => (
             <span key={`t2-${i}`} className="text-[3rem] sm:text-[6rem] md:text-[10rem] font-black font-syne uppercase text-transparent" style={{ WebkitTextStroke: '1px rgba(0,242,255,0.4)' }}>{text}</span>
@@ -43,6 +46,7 @@ export function ReseauxSection() {
         <div className="flex justify-center w-full max-w-2xl mx-auto">
           <motion.a
             href="https://www.instagram.com/bigtraphouse.events/" target="_blank"
+            rel="noopener noreferrer"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -56,7 +60,7 @@ export function ReseauxSection() {
               </div>
               <div className="flex flex-col">
                 <span className="font-syne font-black text-xl sm:text-2xl md:text-3xl tracking-[0.2em] text-white group-hover:text-[#00F2FF] transition-colors duration-500 uppercase">Instagram</span>
-                <span className="font-manrope text-white/40 text-[10px] sm:text-xs tracking-widest uppercase mt-1 group-hover:text-white/70 transition-colors">Le Visuel</span>
+                <span className="font-manrope text-white/60 text-[10px] sm:text-xs tracking-widest uppercase mt-1 group-hover:text-white/70 transition-colors">Le Visuel</span>
               </div>
             </div>
             <div className="relative z-10 w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-[#00F2FF]/50 group-hover:bg-[#00F2FF]/10 transition-all duration-500 -rotate-45 group-hover:rotate-0">

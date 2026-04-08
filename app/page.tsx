@@ -8,7 +8,11 @@ import { Footer } from "@/components/Footer";
 
 export default function Home() {
   return (
-    <ClientShell>
+    <div className="w-full relative bg-[#010101]">
+      {/* Infrastructure: scroll, cursor, WebGL canvas (renders in parallel) */}
+      <ClientShell />
+
+      {/* Page content: each section hydrates independently */}
       <main className="relative z-10 w-full flex flex-col selection:bg-[#00F2FF] selection:text-black">
         <Navbar />
         <HeroSection />
@@ -17,6 +21,6 @@ export default function Home() {
         <VIPSection />
         <Footer />
       </main>
-    </ClientShell>
+    </div>
   );
 }

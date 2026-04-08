@@ -4,24 +4,34 @@ import dynamic from "next/dynamic";
 import { LenisInit } from "@/components/LenisInit";
 import { ScrollOverlays } from "@/components/ScrollOverlays";
 
-// Lazy-load GPU-heavy components (Three.js / WebGL) — ssr: false
+// Lazy-load GPU-heavy components — ssr: false
 const CustomCursor = dynamic(
-  () => import("@/components/CustomCursor").then((m) => ({ default: m.CustomCursor })),
+  () =>
+    import("@/components/CustomCursor").then((m) => ({
+      default: m.CustomCursor,
+    })),
   { ssr: false }
 );
-const SmokeBackground = dynamic(
-  () => import("@/components/SmokeBackground").then((m) => ({ default: m.SmokeBackground })),
+const GlobalCanvas = dynamic(
+  () =>
+    import("@/components/GlobalCanvas").then((m) => ({
+      default: m.GlobalCanvas,
+    })),
   { ssr: false }
 );
 
-export function ClientShell({ children }: { children: React.ReactNode }) {
+/**
+ * ClientShell — Infrastructure-only wrapper.
+ * Contains scroll, cursor, and WebGL canvas. Does NOT wrap page content.
+ * This allows children sections to benefit from streaming SSR / selective hydration.
+ */
+export function ClientShell() {
   return (
-    <div className="w-full relative bg-[#010101]">
+    <>
       <LenisInit />
       <CustomCursor />
       <ScrollOverlays />
-      <SmokeBackground />
-      {children}
-    </div>
+      <GlobalCanvas />
+    </>
   );
 }

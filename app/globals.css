@@ -37,6 +37,30 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   ACCESSIBILITY — Screen-reader only utility
+   ═══════════════════════════════════════════════════════════════ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NOISE OVERLAY — Static PNG replacement for SVG feTurbulence
+   Zero GPU cost, same visual result at opacity-[0.04]
+   ═══════════════════════════════════════════════════════════════ */
+.noise-overlay {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEWFhYWDg4N3d3dtbW17e3t1dXWBgYGHh4d5eXlzc3Oelieli4teleeLi4ubm5ueli7e3t9fX2JiYmeli+fn5+NjY2eli2tra2hoaGeli9vb25ubmeli8fHxhYWFjY2NlZWVnZ2dra2ttbW1xcXF1dXV7e3uBgYGHh4eLi4uRkZGVlZWZmZmdnZ2lpaWpqamxsbG5ubm9vb3BwcHFxcXHx8fJycnLy8vPz8/R0dHT09PX19fb29vf39/h4eHl5eXp6enr6+vv7+/x8fHz8/P19fX5+fn7+/v///8A/wAAAAAAAAAAAAABAAIAAwAEAAUABgAHAAgACQAKAAsADAANAA4ADwAQABEAEgATABQAFQAWABcAGAAZABoAGwAcAB0AHgAfACAAIQAiACMAJgApACwALwAyADUAOAA7AD4AQADDMAAAA5ElEQVR42u3W2Q6CQBBE0YFBQEB2d/H/P9QEY4wznYBx4cHkPHai6aKq+rhSqVQqv6YEsDAp3wIcmJSLAA1MwoWAWiblEiDFpFwGpGBSbgCuMAmXAUmYlCuAGEzKZUAMJuU6IAKTcgNgwaTcBFxhEm4BUpiE24AAJqWLe0zCFVwB3GASbgJuMQl3cIVJuQfIwCQ8AAQwCQ8BFkzCE0AKJuEpoACT8AzgwiQ8B0RgEl4CfDAJrwAeTMIbQAom4S0gB5fwDvAIJuE9IAWT8AGQgEm5B0jBvbpnXlqT8g8XA4HjexcFIAAAABJRU5ErkJggg==");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
 
 .text-glow { 
   text-shadow: 0 0 30px rgba(0, 242, 255, 0.4), 0 0 60px rgba(0, 242, 255, 0.2); 
@@ -123,7 +147,7 @@
   100% { transform: translate(0) }
 }
 
-/* MARQUEE CSS — remplace les animations JS Framer Motion (Fix #6) */
+/* MARQUEE CSS — remplace les animations JS Framer Motion */
 @keyframes marquee-left {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-50%); }

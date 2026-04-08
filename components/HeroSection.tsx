@@ -3,9 +3,6 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import dynamic from "next/dynamic";
-
-const Logo3DCanvas = dynamic(() => import("./Logo3DCanvas"), { ssr: false });
 
 export function HeroSection() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -29,10 +26,8 @@ export function HeroSection() {
     <section id="vision" ref={heroRef} className="relative w-full h-[350vh]">
       <div className="sticky top-0 w-full h-[100dvh] flex flex-col items-center justify-center overflow-hidden px-6">
 
+        {/* Logo 3D is now rendered in GlobalCanvas — this div just handles the scroll indicator */}
         <motion.div style={{ opacity: logoOpacity }} className="absolute inset-0 z-20 pointer-events-none">
-          <div className="absolute inset-0 pointer-events-auto">
-            <Logo3DCanvas />
-          </div>
           <motion.div
             animate={{ y: [0, 10, 0] }}
             transition={{ repeat: Infinity, duration: 2 }}
@@ -46,7 +41,7 @@ export function HeroSection() {
         <motion.div style={{ opacity: text1Opacity, y: text1Y }} className="absolute max-w-3xl text-center pointer-events-none z-30">
           <p className="font-syne text-[#00F2FF] text-xs tracking-[0.4em] font-bold uppercase mb-4">Chapitre I</p>
           <h2 className="text-2xl sm:text-4xl md:text-6xl font-black font-syne uppercase tracking-widest text-white leading-tight drop-shadow-md">
-            Oubliez les standards <br /> <span className="text-white/30">de la nuit.</span>
+            Oubliez les standards <br /> <span className="text-white/60">de la nuit.</span>
           </h2>
         </motion.div>
 
