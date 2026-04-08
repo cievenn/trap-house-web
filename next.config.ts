@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     ],
   },
   turbopack: {},
+  allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev'],
 };
 
 export default nextConfig;

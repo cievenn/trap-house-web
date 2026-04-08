@@ -54,7 +54,7 @@ export function HeroSection() {
 
         <motion.div style={{ opacity: text3Opacity, y: text3Y }} className="absolute max-w-3xl text-center flex flex-col items-center pointer-events-none z-30">
           <div className="w-[1px] h-20 bg-gradient-to-b from-[#00F2FF] to-transparent mb-8" />
-          <p className="font-manrope text-white/70 text-base md:text-xl leading-relaxed font-light drop-shadow-xl bg-black/40 backdrop-blur-xl p-5 md:p-8 rounded-[2rem] border border-white/5">
+          <p className="font-manrope text-white/70 text-base md:text-xl leading-relaxed font-light drop-shadow-xl bg-black/70 md:bg-black/40 md:backdrop-blur-xl backdrop-blur-sm p-5 md:p-8 rounded-[2rem] border border-white/5">
             {"Nous créons plus que des soirées : nous concevons des moments d'exclusivité où la lumière fend l'obscurité, et où l'accès est un privilège absolu."}
           </p>
         </motion.div>

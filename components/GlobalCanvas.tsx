@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo, useEffect, useState } from "react";
+import React, { useRef, useMemo, useEffect, useState, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, Float, Environment } from "@react-three/drei";
 import * as THREE from "three";
@@ -17,51 +17,54 @@ const vertexShader = /* glsl */ `
   }
 `;
 
-const fragmentShader = /* glsl */ `
+const getFragmentShader = (isLowEnd: boolean) => /* glsl */ `
   precision mediump float;
 
   uniform vec2 uResolution;
   uniform float uTime;
   uniform float uScroll;
-  uniform float uLowEnd;
 
   varying vec2 vUv;
 
+  ${isLowEnd ? `
+  // SIMPLIFIED LOW-END HASH/NOISE (Mobile)
+  float hash(vec2 p) {
+      return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+  }
+  float noise(vec2 p) {
+      vec2 i = floor(p); vec2 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+                 mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+  }
+  float fbm(vec2 p) {
+      float v = 0.0; float a = 0.5;
+      for (int i = 0; i < 2; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
+      return v;
+  }
+  ` : `
+  // HIGH END HASH/NOISE (PC)
   float hash(vec2 p) {
       vec3 p3  = fract(vec3(p.xyx) * 0.1031);
       p3 += dot(p3, p3.yzx + 33.33);
       return fract((p3.x + p3.y) * p3.z);
   }
-
   float noise(vec2 x) {
-      vec2 i = floor(x);
-      vec2 f = fract(x);
+      vec2 i = floor(x); vec2 f = fract(x);
       f = f * f * (3.0 - 2.0 * f);
-
-      float a = hash(i + vec2(0.0, 0.0));
-      float b = hash(i + vec2(1.0, 0.0));
-      float c = hash(i + vec2(0.0, 1.0));
-      float d = hash(i + vec2(1.0, 1.0));
-
+      float a = hash(i + vec2(0.0, 0.0)); float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0)); float d = hash(i + vec2(1.0, 1.0));
       return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
   }
-
   float fbm(vec2 p) {
-      float v = 0.0;
-      float a = 0.5;
-      vec2 shift = vec2(100.0);
+      float v = 0.0; float a = 0.5; vec2 shift = vec2(100.0);
       mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
-
-      int maxIters = uLowEnd > 0.5 ? 3 : 5;
-
       for (int i = 0; i < 5; ++i) {
-          if (i >= maxIters) break;
-          v += a * noise(p);
-          p = rot * p * 2.0 + shift;
-          a *= 0.5;
+          v += a * noise(p); p = rot * p * 2.0 + shift; a *= 0.5;
       }
       return v;
   }
+  `}
 
   void main() {
       vec2 uv = vUv;
@@ -71,26 +74,36 @@ const fragmentShader = /* glsl */ `
       vec2 movement = vec2(uTime * 0.03, uTime * -0.08 + scrollFx);
       vec2 p = uv * 2.2 + movement;
 
+      ${isLowEnd ? `
+      float q = fbm(p + uTime * 0.03);
+      float r = fbm(p + q + uTime * 0.02);
+      float f = fbm(p + r * 0.6);
+      float dx = sin(uv.x * 10.0 + uTime) * 0.1;
+      float eNoise = fbm(uv * 3.5 + vec2(dx, uTime * -0.15));
+      ` : `
       vec2 q = vec2(0.0);
       q.x = fbm(p + vec2(0.0, uTime * 0.03));
       q.y = fbm(p + vec2(1.0, uTime * 0.03));
-
       vec2 r = vec2(0.0);
       r.x = fbm(p + 0.4 * q + vec2(1.7, 9.2) + uTime * 0.02);
       r.y = fbm(p + 0.4 * q + vec2(8.3, 2.8) + uTime * 0.02);
-
       float f = fbm(p + r * 0.6);
+
+      vec2 ep = uv * 3.5 + vec2(uTime * 0.08, uTime * -0.15 + scrollFx * 0.8);
+      float eNoise = fbm(ep + r * 1.0 - uTime * 0.3);
+      `}
 
       vec3 darkBlue  = vec3(0.01, 0.015, 0.04);
       vec3 midBlue   = vec3(0.04, 0.08, 0.18);
       vec3 lightBlue = vec3(0.1, 0.2, 0.4);
 
       vec3 color = mix(darkBlue, midBlue, smoothstep(0.1, 0.7, f));
+      ${isLowEnd ? `
+      color = mix(color, lightBlue, smoothstep(0.4, 1.0, f));
+      ` : `
       color = mix(color, lightBlue, smoothstep(0.4, 1.0, f) * smoothstep(0.2, 0.8, r.x));
+      `}
       color *= (f * 1.5 + 0.1);
-
-      vec2 ep = uv * 3.5 + vec2(uTime * 0.08, uTime * -0.15 + scrollFx * 0.8);
-      float eNoise = fbm(ep + r * 1.0 - uTime * 0.3);
 
       float ridge = abs(eNoise - 0.5);
       float electricity = 0.0025 / (ridge + 0.003);
@@ -121,8 +134,7 @@ function ElectricSmokeLayer({ isLowEnd }: { isLowEnd: boolean }) {
     () => ({
       uTime: { value: 0 },
       uScroll: { value: 0 },
-      uResolution: { value: new THREE.Vector2(1, 1) },
-      uLowEnd: { value: isLowEnd ? 1.0 : 0.0 },
+      uResolution: { value: new THREE.Vector2(1, 1) }
     }),
     [isLowEnd]
   );
@@ -137,7 +149,9 @@ function ElectricSmokeLayer({ isLowEnd }: { isLowEnd: boolean }) {
     if (!matRef.current) return;
     const u = matRef.current.uniforms;
     u.uTime.value = clock.elapsedTime;
-    u.uScroll.value = getScroll() * 0.0015;
+    
+    // FIX: Protéger contre une valeur de scroll undefined (NaN casse le WebGL)
+    u.uScroll.value = (getScroll() || 0) * 0.0015;
   });
 
   return (
@@ -146,7 +160,7 @@ function ElectricSmokeLayer({ isLowEnd }: { isLowEnd: boolean }) {
       <shaderMaterial
         ref={matRef}
         vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
+        fragmentShader={getFragmentShader(isLowEnd)}
         uniforms={uniforms}
         depthWrite={false}
         depthTest={false}
@@ -197,7 +211,7 @@ function OrbitLight({
 }
 
 function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
-  const { scene } = useGLTF("/assets/logo.glb");
+  const { scene } = useGLTF("/assets/logo1_draco.glb");
   const clone = useMemo(() => scene.clone(), [scene]);
   const groupRef = useRef<THREE.Group>(null);
   const containerRef = useRef<THREE.Group>(null);
@@ -210,37 +224,43 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
     clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
-        const mat = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color("#A8B4C8"),
-          metalness: isLowEnd ? 0.8 : 1.0,
-          roughness: isLowEnd ? 0.3 : 0.1,
-          envMapIntensity: isLowEnd ? 1.5 : 3.0,
-          reflectivity: isLowEnd ? 0.5 : 1.0,
-          clearcoat: isLowEnd ? 0 : 0.4,
-          clearcoatRoughness: 0.08,
-        });
+        let mat;
+        
+        if (isLowEnd) {
+          mat = new THREE.MeshStandardMaterial({
+            color: new THREE.Color("#A8B4C8"),
+            metalness: 0.7,
+            roughness: 0.4,
+            transparent: true,
+            opacity: 1,
+          });
+        } else {
+          mat = new THREE.MeshPhysicalMaterial({
+            color: new THREE.Color("#A8B4C8"),
+            metalness: 1.0,
+            roughness: 0.1,
+            envMapIntensity: 3.0,
+            reflectivity: 1.0,
+            clearcoat: 0.4,
+            clearcoatRoughness: 0.08,
+            transparent: true,
+            opacity: 1,
+          });
+        }
+        
         mesh.material = mat;
         mesh.castShadow = !isLowEnd;
         mesh.receiveShadow = !isLowEnd;
-        mats.push(mat);
+        mats.push(mat as THREE.MeshPhysicalMaterial);
       }
     });
 
     createdMaterials.current = mats;
 
     return () => {
-      // Dispose cloned materials
+      // Dispose cloned materials ONLY
       mats.forEach((m) => m.dispose());
-      // Dispose cloned geometries and textures (fix memory leak)
-      clone.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-          const mesh = child as THREE.Mesh;
-          mesh.geometry?.dispose();
-          if (Array.isArray(mesh.material)) {
-            mesh.material.forEach((m) => m.dispose());
-          }
-        }
-      });
+      // FIX: Retrait de mesh.geometry?.dispose() qui détruisait le modèle en mémoire
     };
   }, [clone, isLowEnd]);
 
@@ -250,18 +270,19 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
 
     groupRef.current.rotation.y = Math.sin(clock.elapsedTime * 0.25) * 0.08;
 
-    // Fade out with scroll — hero typically finishes around scrollY ~800px
-    const scrollPx = getScroll();
+    // Fade out with scroll
+    const scrollPx = getScroll() || 0; // FIX: Protéger contre undefined
     const fadeStart = 100;
     const fadeEnd = 600;
-    const opacity = Math.max(0, 1 - (scrollPx - fadeStart) / (fadeEnd - fadeStart));
+    
+    // FIX: Math.min/max assure que l'opacité est strictement comprise entre 0 et 1
+    const opacity = Math.max(0, Math.min(1, 1 - (scrollPx - fadeStart) / (fadeEnd - fadeStart)));
+    
     containerRef.current.visible = opacity > 0.01;
 
     // Apply opacity to materials
     if (createdMaterials.current.length > 0) {
-      const needsTransparent = opacity < 1;
       createdMaterials.current.forEach((mat) => {
-        mat.transparent = needsTransparent;
         mat.opacity = opacity;
       });
     }
@@ -332,7 +353,7 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
         )}
 
         <group ref={groupRef}>
-          <primitive object={clone} scale={5} position={[0, -2, 0]} />
+          <primitive object={clone} scale={5} position={[0,-3, 0]} />
         </group>
 
         <Environment preset="studio" />
@@ -341,55 +362,45 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
   );
 }
 
-useGLTF.preload("/assets/logo.glb");
+useGLTF.preload("/assets/logo1_draco.glb");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 //  GLOBAL CANVAS — Single WebGL context for the entire page
 // ═══════════════════════════════════════════════════════════════════════════════
 export function GlobalCanvas() {
-  // Single state to avoid multiple setState calls in useEffect
-  const [status, setStatus] = useState<"ssr" | "desktop" | "mobile">("ssr");
+  const [isReady, setIsReady] = useState(false);
+  const [isLowEnd, setIsLowEnd] = useState(false);
 
   useEffect(() => {
     const isTouch = window.matchMedia("(pointer: coarse)").matches;
-    const lowCores = navigator.hardwareConcurrency
-      ? navigator.hardwareConcurrency <= 4
-      : false;
-    setStatus(isTouch || lowCores ? "mobile" : "desktop");
+    const lowCores = navigator.hardwareConcurrency ? navigator.hardwareConcurrency <= 4 : false;
+    setIsLowEnd(isTouch || lowCores);
+    setIsReady(true);
   }, []);
 
-  // SSR placeholder — matches mobile fallback to prevent FOUC
-  if (status === "ssr") {
+  if (!isReady) {
     return (
       <div className="fixed inset-0 z-0 pointer-events-none bg-[#010101]" />
     );
   }
 
-  // Mobile/low-end: CSS gradient fallback (zero GPU cost)
-  if (status === "mobile") {
-    return (
-      <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#010101] to-[#040816]">
-        <div className="absolute -top-[20vh] left-1/2 -translate-x-1/2 w-[100vw] h-[50vh] bg-[#00F2FF]/[0.08] blur-[100px] rounded-full pointer-events-none" />
-      </div>
-    );
-  }
-
-  // Desktop: Single unified WebGL canvas
   return (
     <div className="fixed inset-0 z-0 pointer-events-none bg-black">
       <Canvas
         camera={{ position: [0, 0, 9], fov: 45 }}
-        dpr={[1, 1.5]}
+        dpr={isLowEnd ? [0.75, 1] : [1, 1.5]}
         gl={{
           alpha: false,
           antialias: false,
           powerPreference: "high-performance",
           stencil: false,
-          depth: false,
+          // FIX: Le paramètre 'depth: false' a été retiré, il entrait en conflit avec le MeshPhysicalMaterial et l'Environment
         }}
       >
-        <ElectricSmokeLayer isLowEnd={false} />
-        <Logo3DScene isLowEnd={false} />
+        <Suspense fallback={null}>
+          <ElectricSmokeLayer isLowEnd={isLowEnd} />
+          <Logo3DScene isLowEnd={isLowEnd} />
+        </Suspense>
       </Canvas>
     </div>
   );
