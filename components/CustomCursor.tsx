@@ -3,7 +3,7 @@
 import React, { useRef, useEffect } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
-export const CustomCursor = () => {
+const CursorInner = () => {
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
   const isHovered = useRef(false);
@@ -13,12 +13,6 @@ export const CustomCursor = () => {
   const springY = useSpring(cursorY, { stiffness: 500, damping: 28, mass: 0.2 });
 
   useEffect(() => {
-    // Si l'appareil cible a un pointeur tactile (mobile/tablette), on annule tout 
-    // pour éviter de vider la batterie avec des calculs Framer Motion invisibles.
-    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) {
-      return;
-    }
-
     let rafId: number | null = null;
     let currentTarget: HTMLElement | null = null;
 
@@ -87,4 +81,18 @@ export const CustomCursor = () => {
       </motion.div>
     </>
   );
+};
+
+export const CustomCursor = () => {
+  const [isDesktop, setIsDesktop] = React.useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsDesktop(window.matchMedia("(pointer: fine)").matches);
+    }
+  }, []);
+
+  if (!isDesktop) return null;
+
+  return <CursorInner />;
 };

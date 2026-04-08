@@ -42,7 +42,7 @@ export function ReseauxSection() {
         {/* RÉSEAU (UNIQUEMENT INSTAGRAM) */}
         <div className="flex justify-center w-full max-w-2xl mx-auto">
           <motion.a
-            href="#"
+            href="https://www.instagram.com/bigtraphouse.events/" target="_blank"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

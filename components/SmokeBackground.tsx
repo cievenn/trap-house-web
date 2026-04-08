@@ -5,7 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 // ═══════════════════════════════════════════════════════════════════════════════
-//  SHADERS — "FUMÉE ÉLECTRIQUE"
+//  SHADERS — "FUMÉE ÉLECTRIQUE" (Rendu Vaporeux)
 // ═══════════════════════════════════════════════════════════════════════════════
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
@@ -21,37 +21,45 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uResolution;
   uniform float uTime;
   uniform float uScroll;
+  uniform float uLowEnd; // 1.0 = mobile/low-end, 0.0 = high-end PC
 
   varying vec2 vUv;
 
-  // Fonction de hachage pseudo-aléatoire
+  // Fonction de hash rapide pour générer du bruit procédural sans texture
   float hash(vec2 p) {
-      p = fract(p * vec2(234.34, 435.345));
-      p += dot(p, p + 34.23);
-      return fract(p.x * p.y);
+      vec3 p3  = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
   }
 
-  // Bruit de base (Value Noise) interpolé
-  float noise(vec2 p) {
-      vec2 i = floor(p);
-      vec2 f = fract(p);
+  // Value noise très doux et optimisé
+  float noise(vec2 x) {
+      vec2 i = floor(x);
+      vec2 f = fract(x);
+      // Lissage cubique pour un effet nuageux très doux
       f = f * f * (3.0 - 2.0 * f); 
-
-      float a = hash(i);
+      
+      float a = hash(i + vec2(0.0, 0.0));
       float b = hash(i + vec2(1.0, 0.0));
       float c = hash(i + vec2(0.0, 1.0));
       float d = hash(i + vec2(1.0, 1.0));
-
+      
       return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
   }
 
-  // Mouvement Brownien Fractionnaire (FBM)
+  // FBM (Fractal Brownian Motion)
   float fbm(vec2 p) {
       float v = 0.0;
       float a = 0.5;
       vec2 shift = vec2(100.0);
+      // Rotation douce pour éviter les biais axiaux
       mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+      
+      // Adaptation des performances (3 boucles sur mobile, 5 sur PC)
+      int maxIters = uLowEnd > 0.5 ? 3 : 5;
+      
       for (int i = 0; i < 5; ++i) {
+          if (i >= maxIters) break;
           v += a * noise(p);
           p = rot * p * 2.0 + shift;
           a *= 0.5;
@@ -63,47 +71,60 @@ const fragmentShader = /* glsl */ `
       vec2 uv = vUv;
       uv.x *= uResolution.x / uResolution.y;
 
-      // Amplification du scroll pour la fumée
-      float scrollFx = uScroll * 1.2; 
+      // Adoucissement du scroll pour éviter l'effet "soupe remuée"
+      float scrollFx = uScroll * 0.3; 
+      
+      // La fumée dérive doucement vers le haut
+      vec2 movement = vec2(uTime * 0.03, uTime * -0.08 + scrollFx);
+      
+      // Échelle globale : plus c'est petit, plus les volutes de fumée sont grosses
+      vec2 p = uv * 2.2 + movement;
 
-      // 1. Déplacement de base (haut/bas) lié au temps ET au scroll
-      vec2 movement = vec2(uTime * 0.02, uTime * -0.15 + scrollFx);
-      vec2 p = uv * 3.0 + movement;
-
-      // 2. Déformation (Domain Warping) : La fumée tourbillonne au scroll
+      // Déformations douces (Domain Warping)
       vec2 q = vec2(0.0);
-      q.x = fbm(p + vec2(0.0, uTime * 0.05 + scrollFx * 0.5));
-      q.y = fbm(p + vec2(1.0, uTime * 0.02 + scrollFx * 0.3));
+      q.x = fbm(p + vec2(0.0, uTime * 0.03));
+      q.y = fbm(p + vec2(1.0, uTime * 0.03));
 
       vec2 r = vec2(0.0);
-      r.x = fbm(p + 1.0 * q + vec2(1.7, 9.2) + uTime * 0.15 + scrollFx * 0.8);
-      r.y = fbm(p + 1.0 * q + vec2(8.3, 2.8) + uTime * 0.12 + scrollFx * 0.6);
+      // On réduit le multiplicateur de 'q' (0.4 au lieu de 1.0) pour enlever l'effet visqueux/gélatine
+      r.x = fbm(p + 0.4 * q + vec2(1.7, 9.2) + uTime * 0.02);
+      r.y = fbm(p + 0.4 * q + vec2(8.3, 2.8) + uTime * 0.02);
 
-      float f = fbm(p + r);
+      // Intensité finale de la fumée
+      float f = fbm(p + r * 0.6);
 
-      // Couleurs de la fumée
-      vec3 color = mix(vec3(0.01, 0.02, 0.08), vec3(0.04, 0.08, 0.25), clamp(f * f * 4.0, 0.0, 1.0));
-      color = mix(color, vec3(0.08, 0.15, 0.4), clamp(length(q), 0.0, 1.0));
-      color = mix(color, vec3(0.12, 0.2, 0.5), clamp(length(r.x), 0.0, 1.0));
+      // Couleurs : Teintes bleutées / nuit
+      vec3 darkBlue  = vec3(0.01, 0.015, 0.04);
+      vec3 midBlue   = vec3(0.04, 0.08, 0.18);
+      vec3 lightBlue = vec3(0.1, 0.2, 0.4);
 
-      color = (f * f * f + 0.6 * f * f + 0.5 * f) * color;
+      // Mélange très doux avec smoothstep (adieu les arêtes dures)
+      vec3 color = mix(darkBlue, midBlue, smoothstep(0.1, 0.7, f));
+      color = mix(color, lightBlue, smoothstep(0.4, 1.0, f) * smoothstep(0.2, 0.8, r.x));
 
-      // --- ÉLECTRICITÉ ---
-      // L'électricité bouge encore plus vite pour garder l'effet de profondeur (parallaxe)
-      vec2 ep = uv * 4.0 + vec2(uTime * 0.1, uTime * -0.4 + (scrollFx * 1.8));
-      float eNoise = fbm(ep + r * 1.5 - uTime * 0.6);
+      // Ajout de volume diffus
+      color *= (f * 1.5 + 0.1);
+
+      // --- ÉLECTRICITÉ SUBTILE ---
+      // L'électricité bouge différemment et semble "à l'intérieur" du nuage
+      vec2 ep = uv * 3.5 + vec2(uTime * 0.08, uTime * -0.15 + scrollFx * 0.8);
+      float eNoise = fbm(ep + r * 1.0 - uTime * 0.3);
       
       float ridge = abs(eNoise - 0.5);
-      float electricity = 0.005 / (ridge + 0.005);
+      // Légère augmentation de l'épaisseur de base (0.0025 au lieu de 0.002)
+      float electricity = 0.0025 / (ridge + 0.003); 
       
-      float mask = fbm(p * 3.0 + uTime);
-      float flash = pow(sin(uTime * 5.0 + f * 12.0) * 0.5 + 0.5, 4.0);
-      electricity *= smoothstep(0.4, 0.7, mask) * flash;
+      // Le masque est moins restrictif (0.45 au lieu de 0.5) pour qu'il y en ait un peu plus souvent
+      float mask = smoothstep(0.45, 0.85, f);
+      // Flash légèrement plus long (puissance 4.0 au lieu de 6.0)
+      float flash = pow(sin(uTime * 3.0 + f * 10.0) * 0.5 + 0.5, 4.0);
+      electricity *= mask * flash;
 
       vec3 elecColor = vec3(0.4, 0.8, 1.0); 
-      color += elecColor * electricity;
+      // Multiplicateur global augmenté de 1.5 à 1.8
+      color += elecColor * electricity * 1.8;
 
-      // Vignette
+      // Vignette douce sur les bords
       vec2 screenCenter = vUv - 0.5;
       float vignette = 1.0 - dot(screenCenter, screenCenter) * 1.5;
       color *= clamp(vignette, 0.0, 1.0);
@@ -119,51 +140,84 @@ function ElectricSmokeLayer() {
   const matRef = useRef<THREE.ShaderMaterial>(null);
   const { size, viewport } = useThree();
 
+  const isLowEnd = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    const isLowCore = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
+    return isTouch || isLowCore;
+  }, []);
+
   const uniforms = useMemo(() => ({
     uTime:       { value: 0 },
     uScroll:     { value: 0 },
     uResolution: { value: new THREE.Vector2(1, 1) },
-  }), []);
+    uLowEnd:     { value: isLowEnd ? 1.0 : 0.0 }, // 1.0 = active les optimisations GLSL
+  }), [isLowEnd]);
 
-  const material = useMemo(() => new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader,
-    fragmentShader,
-    depthWrite: false,
-  }), [uniforms]);
-
-  // Cleanup GPU memory on unmount
   useEffect(() => {
-    return () => {
-      material.dispose();
-    };
-  }, [material]);
+    if (matRef.current) {
+      matRef.current.uniforms.uResolution.value.set(size.width, size.height);
+    }
+  }, [size.width, size.height]);
 
   useFrame(({ clock }) => {
     if (!matRef.current) return;
 
     const u = matRef.current.uniforms;
-    u.uTime.value       = clock.elapsedTime;
-    // Lecture directe depuis la mémoire RAM (interception Lenis) pour éviter d'invalider le DOM (Layout Thrashing)
-    const currentScroll = (window as any).lenisScroll || 0;
-    u.uScroll.value     = currentScroll * 0.0015;
-    u.uResolution.value.set(size.width, size.height);
+    u.uTime.value = clock.elapsedTime;
+    
+    // Fallback robuste pour la lecture du scroll global
+    const currentScroll = typeof window !== "undefined" 
+      ? ((window as any).lenisScroll || window.scrollY || 0) 
+      : 0;
+    u.uScroll.value = currentScroll * 0.0015;
   });
 
   return (
     <mesh scale={[viewport.width, viewport.height, 1]}>
-      <planeGeometry args={[1, 1]} />
-      <primitive object={material} ref={matRef} attach="material" />
+      <planeGeometry args={isLowEnd ? [1, 1] : [2, 2]} />
+      <shaderMaterial
+        ref={matRef}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        uniforms={uniforms}
+        depthWrite={false}
+      />
     </mesh>
   );
 }
 
 export function SmokeBackground() {
+  const [isMobile, setIsMobile] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      const isTouch = window.matchMedia("(pointer: coarse)").matches;
+      const isLowEnd = navigator.hardwareConcurrency ? navigator.hardwareConcurrency <= 4 : false;
+      setIsMobile(isTouch || isLowEnd);
+    }
+  }, []);
+
+  if (!mounted) {
+    return <div className="fixed inset-0 z-0 pointer-events-none bg-black" />;
+  }
+
+  // Le fallback reste identique pour assurer des perfs parfaites sur vieux mobiles
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#010101] to-[#040816]">
+        <div className="absolute -top-[20vh] left-1/2 -translate-x-1/2 w-[100vw] h-[50vh] bg-[#00F2FF]/[0.08] blur-[100px] rounded-full pointer-events-none" />
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-0 pointer-events-none bg-black">
       <Canvas
         camera={{ position: [0, 0, 1] }}
-        dpr={1}
+        dpr={[1, 1.5]}
         gl={{
           alpha: false,
           antialias: false,
