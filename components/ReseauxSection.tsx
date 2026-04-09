@@ -8,7 +8,7 @@ export function ReseauxSection() {
   return (
     <section id="reseaux" className="relative w-full min-h-[100vh] flex flex-col items-center justify-center overflow-hidden bg-transparent py-32 z-20">
       {/* Lueur d'ambiance globale */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-[#00F2FF]/[0.02] blur-[120px] rounded-full pointer-events-none z-0" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] md:w-[40vw] md:h-[40vw] bg-[radial-gradient(ellipse_at_50%_50%,rgba(0,242,255,0.03),transparent_60%)] md:bg-[#00F2FF]/[0.02] md:blur-[120px] rounded-full pointer-events-none z-0" />
 
       {/* Screen-reader accessible text (read once, not 12 times) */}
       <span className="sr-only">TRAP HOUSE EVENT — REJOIGNEZ LE CERCLE</span>
@@ -51,7 +51,7 @@ export function ReseauxSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
-            className="group relative w-full h-32 sm:h-40 flex items-center justify-between px-6 md:px-10 rounded-[2rem] border border-white/10 bg-[#020202]/80 backdrop-blur-2xl overflow-hidden interactive-element transition-all duration-500 hover:border-[#00F2FF]/60 hover:shadow-[0_0_50px_rgba(0,242,255,0.15)] hover:-translate-y-2"
+            className="group relative w-full h-32 sm:h-40 flex items-center justify-between px-6 md:px-10 rounded-[2rem] border border-white/10 bg-[#020202]/95 md:bg-[#020202]/80 md:backdrop-blur-2xl overflow-hidden interactive-element transition-all duration-500 hover:border-[#00F2FF]/60 hover:shadow-[0_0_50px_rgba(0,242,255,0.15)] hover:-translate-y-2"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-[#00F2FF]/0 via-[#00F2FF]/5 to-[#00F2FF]/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
             <div className="relative flex items-center gap-6 z-10">

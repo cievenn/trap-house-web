@@ -3,6 +3,7 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { useDeviceCapabilities } from "@/lib/useDeviceCapabilities";
 
 export function HeroSection() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -11,16 +12,21 @@ export function HeroSection() {
     offset: ["start start", "end start"],
   });
 
+  const { isMobile } = useDeviceCapabilities();
+
   const springConfig = { stiffness: 60, damping: 20, mass: 0.5 };
   const smoothHeroScroll = useSpring(heroScroll, springConfig);
 
-  const logoOpacity = useTransform(smoothHeroScroll, [0, 0.2], [1, 0]);
-  const text1Opacity = useTransform(smoothHeroScroll, [0.15, 0.35, 0.5], [0, 1, 0]);
-  const text1Y = useTransform(smoothHeroScroll, [0.15, 0.35, 0.5], [40, 0, -40]);
-  const text2Opacity = useTransform(smoothHeroScroll, [0.45, 0.65, 0.8], [0, 1, 0]);
-  const text2Y = useTransform(smoothHeroScroll, [0.45, 0.65, 0.8], [40, 0, -40]);
-  const text3Opacity = useTransform(smoothHeroScroll, [0.75, 0.95], [0, 1]);
-  const text3Y = useTransform(smoothHeroScroll, [0.75, 0.95], [40, 0]);
+  // Bypass useSpring on mobile for significantly better FPS
+  const activeScroll = isMobile ? heroScroll : smoothHeroScroll;
+
+  const logoOpacity = useTransform(activeScroll, [0, 0.2], [1, 0]);
+  const text1Opacity = useTransform(activeScroll, [0.15, 0.35, 0.5], [0, 1, 0]);
+  const text1Y = useTransform(activeScroll, [0.15, 0.35, 0.5], [40, 0, -40]);
+  const text2Opacity = useTransform(activeScroll, [0.45, 0.65, 0.8], [0, 1, 0]);
+  const text2Y = useTransform(activeScroll, [0.45, 0.65, 0.8], [40, 0, -40]);
+  const text3Opacity = useTransform(activeScroll, [0.75, 0.95], [0, 1]);
+  const text3Y = useTransform(activeScroll, [0.75, 0.95], [40, 0]);
 
   return (
     <section id="vision" ref={heroRef} className="relative w-full h-[350vh]">
@@ -54,7 +60,7 @@ export function HeroSection() {
 
         <motion.div style={{ opacity: text3Opacity, y: text3Y }} className="absolute max-w-3xl text-center flex flex-col items-center pointer-events-none z-30">
           <div className="w-[1px] h-20 bg-gradient-to-b from-[#00F2FF] to-transparent mb-8" />
-          <p className="font-manrope text-white/70 text-base md:text-xl leading-relaxed font-light drop-shadow-xl bg-black/70 md:bg-black/40 md:backdrop-blur-xl backdrop-blur-sm p-5 md:p-8 rounded-[2rem] border border-white/5">
+          <p className="font-manrope text-white/70 text-base md:text-xl leading-relaxed font-light drop-shadow-xl bg-black/85 md:bg-black/40 md:backdrop-blur-xl p-5 md:p-8 rounded-[2rem] border border-white/5">
             {"Nous créons plus que des soirées : nous concevons des moments d'exclusivité où la lumière fend l'obscurité, et où l'accès est un privilège absolu."}
           </p>
         </motion.div>

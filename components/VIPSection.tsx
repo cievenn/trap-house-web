@@ -31,7 +31,7 @@ export function VIPSection() {
           >
             <div className="hidden md:block absolute inset-0 opacity-[0.04] pointer-events-none noise-overlay" />
 
-            <div className="absolute -top-1/4 left-1/2 -translate-x-1/2 w-[80%] h-[50%] bg-[#00F2FF]/[0.08] md:bg-[#00F2FF]/[0.04] blur-[60px] md:blur-[80px] rounded-full pointer-events-none" />
+            <div className="absolute -top-1/4 left-1/2 -translate-x-1/2 w-[80%] h-[50%] bg-[radial-gradient(ellipse_at_50%_50%,rgba(0,242,255,0.12),transparent_60%)] md:bg-[#00F2FF]/[0.04] md:blur-[80px] rounded-full pointer-events-none" />
             
             {/* Sur mobile, on affiche les effets visuels par défaut (opacity-100), sur desktop on les cache jusqu'au survol */}
             <div className="absolute inset-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_50%_0%,rgba(0,242,255,0.12)_0%,transparent_65%)]" />
@@ -67,7 +67,7 @@ export function VIPSection() {
           >
             <div className="hidden md:block absolute inset-0 opacity-[0.04] pointer-events-none noise-overlay" />
 
-            <div className="absolute -top-1/4 right-1/4 w-[70%] h-[50%] bg-[#00F2FF]/[0.08] md:bg-[#00F2FF]/[0.05] blur-[60px] md:blur-[90px] rounded-full pointer-events-none" />
+            <div className="absolute -top-1/4 right-1/4 w-[70%] h-[50%] bg-[radial-gradient(ellipse_at_50%_50%,rgba(0,242,255,0.12),transparent_60%)] md:bg-[#00F2FF]/[0.05] md:blur-[90px] rounded-full pointer-events-none" />
             <div className="absolute inset-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_50%_0%,rgba(0,242,255,0.12)_0%,transparent_65%)]" />
 
             <div className="relative z-20 flex flex-col items-center p-6 md:p-10 text-center w-full">

@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import Image from "next/image";
 import { VITRINE_DATA, VitrineCardType } from "@/lib/data";
+import { useDeviceCapabilities } from "@/lib/useDeviceCapabilities";
 
 const VITRINE_BUFFER = 0.10;
 const INTERP_STEPS = 20;
@@ -51,7 +52,7 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
       style={{ x, y, scale, rotateZ, opacity, zIndex: total - index }}
       className="absolute inset-0 origin-center w-full h-full will-change-transform"
     >
-      <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-[#020202] border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-end group">
+      <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-[#020202] border border-white/10 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.9)] md:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-end group">
         <div className="absolute inset-0 w-full h-full">
           <Image src={src} alt={`Trap House Archive ${volume}`} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 60vw, 35vw" className="object-cover scale-110 md:group-hover:scale-100 transition-transform duration-1000 ease-out opacity-80" loading="lazy" />
         </div>
@@ -85,11 +86,15 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
 
 export function VitrineSection() {
   const vitrineRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useDeviceCapabilities();
   const { scrollYProgress: vitrineScroll } = useScroll({ target: vitrineRef, offset: ["start start", "end end"] });
   const smoothVitrineScroll = useSpring(vitrineScroll, { stiffness: 70, damping: 25, mass: 0.8, restDelta: 0.0001 });
   
-  const vitrineOpacity = useTransform(smoothVitrineScroll, [0.9, 1], [1, 0]);
-  const vitrineScale = useTransform(smoothVitrineScroll, [0.9, 1], [1, 0.95]);
+  // Bypass useSpring on mobile for significantly better FPS
+  const activeScroll = isMobile ? vitrineScroll : smoothVitrineScroll;
+
+  const vitrineOpacity = useTransform(activeScroll, [0.9, 1], [1, 0]);
+  const vitrineScale = useTransform(activeScroll, [0.9, 1], [1, 0.95]);
 
   return (
     <section id="vitrine" ref={vitrineRef} className="relative w-full bg-transparent z-20" style={{ height: `${VITRINE_DATA.length * 120}vh` }}>
@@ -108,7 +113,7 @@ export function VitrineSection() {
 
         <div className="w-[85vw] sm:w-[70vw] md:w-[60vw] xl:w-[35vw] h-[55vh] sm:h-[60vh] xl:h-[75vh] relative perspective-1000 z-10 pointer-events-none">
           {VITRINE_DATA.map((card, i) => (
-            <StackedCard key={i} {...card} index={i} total={VITRINE_DATA.length} progress={smoothVitrineScroll} />
+            <StackedCard key={i} {...card} index={i} total={VITRINE_DATA.length} progress={activeScroll} />
           ))}
         </div>
 

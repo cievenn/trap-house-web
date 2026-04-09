@@ -110,10 +110,16 @@ function MobileVideoBackground() {
         playsInline
         preload="auto"
         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out"
-        style={{ opacity: videoReady ? 0.65 : 0, filter: "brightness(0.75)" }}
+        style={{ opacity: videoReady ? 0.65 : 0 }}
       >
         <source src="/assets/smoke-background.mp4" type="video/mp4" />
       </video>
+      
+      {/* Black overlay replacing 'filter: brightness(0.75)' for better GPU performance */}
+      <div 
+        className="absolute inset-0 bg-black/25 pointer-events-none transition-opacity duration-[1200ms] ease-in-out" 
+        style={{ opacity: videoReady ? 1 : 0 }} 
+      />
     </div>
   );
 }
