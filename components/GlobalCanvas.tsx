@@ -2,9 +2,261 @@
 
 import React, { useRef, useMemo, useEffect, useState, Suspense } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useGLTF, Float, Environment } from "@react-three/drei";
+import { useGLTF, Float, Environment, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { getScroll } from "@/lib/scrollStore";
+import { useDeviceCapabilities } from "@/lib/useDeviceCapabilities"; // Ajout de votre hook
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  MOBILE VIDEO BACKGROUND — CSS premium → fondu vidéo au 1er geste utilisateur
+// ═══════════════════════════════════════════════════════════════════════════════
+function MobileVideoBackground() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  // videoReady : la vidéo est chargée ET en cours de lecture → on peut l'afficher
+  const [videoReady, setVideoReady] = useState(false);
+  const unlockedRef = useRef(false);
+
+  // Charge silencieusement la vidéo en arrière-plan dès le montage
+  // (preload="auto" suffit, pas besoin de .play() ici)
+  const unlockVideo = () => {
+    if (unlockedRef.current) return; // Ne s'exécute qu'une seule fois
+    unlockedRef.current = true;
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.play().then(() => {
+      // La vidéo tourne → on déclenche le fondu via le state
+      setVideoReady(true);
+    }).catch(() => {
+      // Très rare : si ça échoue quand même, on laisse le fond CSS
+    });
+  };
+
+  useEffect(() => {
+    // Le premier "touchstart" (scroll instinctif, tap n'importe où) déverrouille tout
+    document.addEventListener("touchstart", unlockVideo, { once: true, passive: true });
+    document.addEventListener("click", unlockVideo, { once: true });
+    // Le scroll natif (wheel sur tablette avec souris) comme fallback
+    document.addEventListener("scroll", unlockVideo, { once: true, passive: true });
+
+    return () => {
+      document.removeEventListener("touchstart", unlockVideo);
+      document.removeEventListener("click", unlockVideo);
+      document.removeEventListener("scroll", unlockVideo);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+
+      {/* ── FOND CSS PREMIUM (visible tant que la vidéo n'est pas prête) ── */}
+      <div
+        className="absolute inset-0 transition-opacity duration-1000"
+        style={{ opacity: videoReady ? 0 : 1 }}
+        aria-hidden="true"
+      >
+        {/* Base sombre profonde */}
+        <div className="absolute inset-0 bg-[#05050A]" />
+
+        {/* Halo principal bleu-cyan centré en haut */}
+        <div
+          className="absolute top-0 left-0 w-full h-[65vh]"
+          style={{
+            background: "radial-gradient(ellipse 80% 100% at 50% 0%, rgba(0, 200, 255, 0.18) 0%, rgba(0, 80, 160, 0.06) 50%, transparent 100%)",
+          }}
+        />
+
+        {/* Halo secondaire bas-gauche – chaleur froide */}
+        <div
+          className="absolute bottom-0 left-[-10%] w-[60vw] h-[50vh]"
+          style={{
+            background: "radial-gradient(ellipse at 30% 80%, rgba(0, 120, 200, 0.09) 0%, transparent 65%)",
+          }}
+        />
+
+        {/* Accent droit subtil */}
+        <div
+          className="absolute top-[20%] right-[-5%] w-[40vw] h-[40vh]"
+          style={{
+            background: "radial-gradient(ellipse at 80% 30%, rgba(0, 242, 255, 0.06) 0%, transparent 60%)",
+          }}
+        />
+
+        {/* Ligne horizontale type scanline subtile */}
+        <div
+          className="absolute top-0 left-0 w-full"
+          style={{
+            height: "1px",
+            background: "linear-gradient(90deg, transparent 0%, rgba(0, 242, 255, 0.3) 30%, rgba(0, 242, 255, 0.6) 50%, rgba(0, 242, 255, 0.3) 70%, transparent 100%)",
+          }}
+        />
+
+        {/* Vignette de bords */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.7) 100%)",
+          }}
+        />
+      </div>
+
+      {/* ── VIDÉO (préchargée silencieusement, fondu-entrant au 1er geste) ── */}
+      <video
+        ref={videoRef}
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out"
+        style={{ opacity: videoReady ? 0.65 : 0, filter: "brightness(0.75)" }}
+      >
+        <source src="/assets/smoke-background.mp4" type="video/mp4" />
+      </video>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  MOBILE LOGO SCENE — MatCap only. 0 lumières, 0 Environment, 0 shader lourd.
+//  Fondu de disparition pilotée par le scroll (identique à la version PC).
+// ═══════════════════════════════════════════════════════════════════════════════
+function MobileLogoScene() {
+  const { scene } = useGLTF("/assets/logo1_draco.glb");
+  const clone = useMemo(() => scene.clone(), [scene]);
+  const matcap = useTexture("/assets/matcap-chrome.webp");
+
+  const groupRef = useRef<THREE.Group>(null);
+  const containerRef = useRef<THREE.Group>(null);
+  const createdMaterials = useRef<THREE.MeshMatcapMaterial[]>([]);
+
+  // Configuration texture matcap : filtrage lisse + espace couleur correct
+  useEffect(() => {
+    matcap.minFilter = THREE.LinearFilter;
+    matcap.magFilter = THREE.LinearFilter;
+    matcap.colorSpace = THREE.SRGBColorSpace;
+    matcap.needsUpdate = true;
+  }, [matcap]);
+
+  // Application du matcap sur chaque mesh + recalcul des normales lisses
+  useEffect(() => {
+    const mats: THREE.MeshMatcapMaterial[] = [];
+    clone.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh;
+
+        // CORRECTION KALÉIDOSCOPE : le GLB exporte souvent des normales "flat" (1 normale par face).
+        // MatCap échantillonne la texture selon les normales en espace-écran → il faut des normales
+        // lisses (interpolées par vertex) pour que le reflet chrome soit continu et pas fragmenté.
+        if (mesh.geometry) {
+          mesh.geometry.deleteAttribute("normal");
+          mesh.geometry.computeVertexNormals();
+        }
+
+        const mat = new THREE.MeshMatcapMaterial({
+          matcap,
+          transparent: true,
+          opacity: 1,
+          flatShading: false, // Force l'interpolation lisse entre les vertex
+        });
+        mesh.material = mat;
+        mats.push(mat);
+      }
+    });
+    createdMaterials.current = mats;
+    return () => mats.forEach((m) => m.dispose());
+  }, [clone, matcap]);
+
+  // Légère oscillation + fondu au scroll (même comportement que sur PC)
+  useFrame(({ clock }) => {
+    if (!groupRef.current || !containerRef.current) return;
+
+    groupRef.current.rotation.y = Math.sin(clock.elapsedTime * 0.25) * 0.08;
+
+    const scrollPx = getScroll() || 0;
+    const opacity = Math.max(0, Math.min(1, 1 - (scrollPx - 100) / 500));
+    containerRef.current.visible = opacity > 0.01;
+
+    createdMaterials.current.forEach((mat) => {
+      mat.opacity = opacity;
+    });
+  });
+
+  return (
+    <group ref={containerRef}>
+      <Float speed={2} rotationIntensity={0} floatIntensity={0.5}>
+        <group ref={groupRef}>
+          <primitive object={clone} scale={5} position={[0, -3, 0]} />
+        </group>
+      </Float>
+    </group>
+  );
+}
+
+useGLTF.preload("/assets/logo1_draco.glb");
+
+export function GlobalCanvas() {
+  const [isReady, setIsReady] = useState(false);
+  const { isMobile } = useDeviceCapabilities();
+
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
+
+  // SSR / Hydration guard — évite le flash blanc sur le serveur
+  if (!isReady) {
+    return <div className="fixed inset-0 z-0 bg-[#010101]" />;
+  }
+
+  // ==== MOBILE : vidéo + logo matcap, zéro WebGL lourd ====
+  if (isMobile) {
+    return (
+      <>
+        {/* Fond vidéo */}
+        <MobileVideoBackground />
+        {/* Logo matcap dans son propre canvas — indépendant de la vidéo */}
+        <div className="fixed inset-0 z-[1] pointer-events-none">
+          <Canvas
+            camera={{ position: [0, 0, 9], fov: 45 }}
+            dpr={[0.75, 1]}
+            gl={{
+              alpha: true,       // fond transparent pour voir la vidéo derrière
+              antialias: false,
+              powerPreference: "high-performance",
+              stencil: false,
+            }}
+          >
+            <Suspense fallback={null}>
+              <MobileLogoScene />
+            </Suspense>
+          </Canvas>
+        </div>
+      </>
+    );
+  }
+
+  // ==== DESKTOP : WebGL complet ====
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none bg-black">
+      <Canvas
+        camera={{ position: [0, 0, 9], fov: 45 }}
+        dpr={[1, 1.5]}
+        gl={{
+          alpha: false,
+          antialias: false,
+          powerPreference: "high-performance",
+          stencil: false,
+        }}
+      >
+        <Suspense fallback={null}>
+          <ElectricSmokeLayer isLowEnd={false} />
+          <Logo3DScene isLowEnd={false} />
+        </Suspense>
+      </Canvas>
+    </div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 //  SHADERS — "FUMÉE ÉLECTRIQUE"
@@ -148,10 +400,12 @@ function ElectricSmokeLayer({ isLowEnd }: { isLowEnd: boolean }) {
   useFrame(({ clock }) => {
     if (!matRef.current) return;
     const u = matRef.current.uniforms;
+    
+    // La fumée continue de s'animer dans le temps dans tous les cas
     u.uTime.value = clock.elapsedTime;
     
-    // FIX: Protéger contre une valeur de scroll undefined (NaN casse le WebGL)
-    u.uScroll.value = (getScroll() || 0) * 0.0015;
+    // Optimisation mobile : désactivation de l'effet de scroll si isLowEnd est true
+    u.uScroll.value = isLowEnd ? 0 : (getScroll() || 0) * 0.0015;
   });
 
   return (
@@ -363,45 +617,3 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
 }
 
 useGLTF.preload("/assets/logo1_draco.glb");
-
-// ═══════════════════════════════════════════════════════════════════════════════
-//  GLOBAL CANVAS — Single WebGL context for the entire page
-// ═══════════════════════════════════════════════════════════════════════════════
-export function GlobalCanvas() {
-  const [isReady, setIsReady] = useState(false);
-  const [isLowEnd, setIsLowEnd] = useState(false);
-
-  useEffect(() => {
-    const isTouch = window.matchMedia("(pointer: coarse)").matches;
-    const lowCores = navigator.hardwareConcurrency ? navigator.hardwareConcurrency <= 4 : false;
-    setIsLowEnd(isTouch || lowCores);
-    setIsReady(true);
-  }, []);
-
-  if (!isReady) {
-    return (
-      <div className="fixed inset-0 z-0 pointer-events-none bg-[#010101]" />
-    );
-  }
-
-  return (
-    <div className="fixed inset-0 z-0 pointer-events-none bg-black">
-      <Canvas
-        camera={{ position: [0, 0, 9], fov: 45 }}
-        dpr={isLowEnd ? [0.75, 1] : [1, 1.5]}
-        gl={{
-          alpha: false,
-          antialias: false,
-          powerPreference: "high-performance",
-          stencil: false,
-          // FIX: Le paramètre 'depth: false' a été retiré, il entrait en conflit avec le MeshPhysicalMaterial et l'Environment
-        }}
-      >
-        <Suspense fallback={null}>
-          <ElectricSmokeLayer isLowEnd={isLowEnd} />
-          <Logo3DScene isLowEnd={isLowEnd} />
-        </Suspense>
-      </Canvas>
-    </div>
-  );
-}

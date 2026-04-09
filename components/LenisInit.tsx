@@ -6,15 +6,23 @@ import { setScroll } from "@/lib/scrollStore";
 
 export function LenisInit() {
   useEffect(() => {
-    // Touch devices: native scroll only (Lenis scroll-jacking is bad on Android)
     const isTouch =
       window.matchMedia("(pointer: coarse)").matches ||
       navigator.maxTouchPoints > 0;
 
     if (isTouch) {
+      let ticking = false; // Notre verrou
+
       const onNativeScroll = () => {
-        setScroll(window.scrollY);
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            setScroll(window.scrollY);
+            ticking = false; // On libère le verrou après la mise à jour
+          });
+          ticking = true; // On verrouille jusqu'à la prochaine frame
+        }
       };
+      
       window.addEventListener("scroll", onNativeScroll, { passive: true });
 
       return () => {
