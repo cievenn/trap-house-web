@@ -11,15 +11,15 @@ export function LenisInit() {
       navigator.maxTouchPoints > 0;
 
     if (isTouch) {
-      let ticking = false; // Notre verrou
+      let lastTime = 0;
 
       const onNativeScroll = () => {
-        if (!ticking) {
+        const now = performance.now();
+        if (now - lastTime > 60) {
+          lastTime = now;
           window.requestAnimationFrame(() => {
             setScroll(window.scrollY);
-            ticking = false; // On libère le verrou après la mise à jour
           });
-          ticking = true; // On verrouille jusqu'à la prochaine frame
         }
       };
       

@@ -9,16 +9,13 @@ import { useSyncExternalStore } from "react";
 interface DeviceCapabilities {
   /** Touch-primary device (phone, tablet) */
   isTouch: boolean;
-  /** Low CPU core count (≤4) — likely mobile or entry-level */
-  isLowEnd: boolean;
-  /** Combined: isTouch OR isLowEnd */
+  /** Combined: isMobile is identical to isTouch */
   isMobile: boolean;
 }
 
 // SSR-safe defaults (assume desktop until hydrated)
 const SSR_DEFAULTS: DeviceCapabilities = {
   isTouch: false,
-  isLowEnd: false,
   isMobile: false,
 };
 
@@ -28,10 +25,7 @@ let clientCaps: DeviceCapabilities | null = null;
 function getClientCaps(): DeviceCapabilities {
   if (clientCaps) return clientCaps;
   const isTouch = window.matchMedia("(pointer: coarse)").matches;
-  const isLowEnd = navigator.hardwareConcurrency
-    ? navigator.hardwareConcurrency <= 4
-    : false;
-  clientCaps = { isTouch, isLowEnd, isMobile: isTouch || isLowEnd };
+  clientCaps = { isTouch, isMobile: isTouch };
   return clientCaps;
 }
 

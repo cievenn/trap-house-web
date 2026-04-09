@@ -14,97 +14,50 @@ function MobileVideoBackground() {
   const videoRef = useRef<HTMLVideoElement>(null);
   // videoReady : la vidéo est chargée ET en cours de lecture → on peut l'afficher
   const [videoReady, setVideoReady] = useState(false);
-  const unlockedRef = useRef(false);
+  const [videoFailed, setVideoFailed] = useState(false);
 
-  // Charge silencieusement la vidéo en arrière-plan dès le montage
-  // (preload="auto" suffit, pas besoin de .play() ici)
-  const unlockVideo = () => {
-    if (unlockedRef.current) return; // Ne s'exécute qu'une seule fois
-    unlockedRef.current = true;
-
+  useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+    // Tentative de lecture immédiate directe
     video.play().then(() => {
-      // La vidéo tourne → on déclenche le fondu via le state
       setVideoReady(true);
     }).catch(() => {
-      // Très rare : si ça échoue quand même, on laisse le fond CSS
+      // Bloqué en mode économie de batterie ou par la politique stricte autoplay
+      setVideoFailed(true); // On affiche alors le CSS simple
+      
+      const unlockOnTouch = () => {
+        video.play().then(() => {
+          setVideoReady(true);
+          setVideoFailed(false); // Retrait du background CSS une fois démarré
+        }).catch(() => {});
+        document.removeEventListener("touchstart", unlockOnTouch);
+        document.removeEventListener("click", unlockOnTouch);
+        document.removeEventListener("scroll", unlockOnTouch);
+      };
+      
+      document.addEventListener("touchstart", unlockOnTouch, { once: true, passive: true });
+      document.addEventListener("click", unlockOnTouch, { once: true });
+      document.addEventListener("scroll", unlockOnTouch, { once: true, passive: true });
     });
-  };
-
-  useEffect(() => {
-    // Le premier "touchstart" (scroll instinctif, tap n'importe où) déverrouille tout
-    document.addEventListener("touchstart", unlockVideo, { once: true, passive: true });
-    document.addEventListener("click", unlockVideo, { once: true });
-    // Le scroll natif (wheel sur tablette avec souris) comme fallback
-    document.addEventListener("scroll", unlockVideo, { once: true, passive: true });
-
-    return () => {
-      document.removeEventListener("touchstart", unlockVideo);
-      document.removeEventListener("click", unlockVideo);
-      document.removeEventListener("scroll", unlockVideo);
-    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#05050A]">
 
-      {/* ── FOND CSS PREMIUM (visible tant que la vidéo n'est pas prête) ── */}
-      <div
-        className="absolute inset-0 transition-opacity duration-1000"
-        style={{ opacity: videoReady ? 0 : 1 }}
-        aria-hidden="true"
-      >
-        {/* Base sombre profonde */}
-        <div className="absolute inset-0 bg-[#05050A]" />
-
-        {/* Halo principal bleu-cyan centré en haut */}
-        <div
-          className="absolute top-0 left-0 w-full h-[65vh]"
-          style={{
-            background: "radial-gradient(ellipse 80% 100% at 50% 0%, rgba(0, 200, 255, 0.18) 0%, rgba(0, 80, 160, 0.06) 50%, transparent 100%)",
-          }}
-        />
-
-        {/* Halo secondaire bas-gauche – chaleur froide */}
-        <div
-          className="absolute bottom-0 left-[-10%] w-[60vw] h-[50vh]"
-          style={{
-            background: "radial-gradient(ellipse at 30% 80%, rgba(0, 120, 200, 0.09) 0%, transparent 65%)",
-          }}
-        />
-
-        {/* Accent droit subtil */}
-        <div
-          className="absolute top-[20%] right-[-5%] w-[40vw] h-[40vh]"
-          style={{
-            background: "radial-gradient(ellipse at 80% 30%, rgba(0, 242, 255, 0.06) 0%, transparent 60%)",
-          }}
-        />
-
-        {/* Ligne horizontale type scanline subtile */}
-        <div
-          className="absolute top-0 left-0 w-full"
-          style={{
-            height: "1px",
-            background: "linear-gradient(90deg, transparent 0%, rgba(0, 242, 255, 0.3) 30%, rgba(0, 242, 255, 0.6) 50%, rgba(0, 242, 255, 0.3) 70%, transparent 100%)",
-          }}
-        />
-
-        {/* Vignette de bords */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.7) 100%)",
-          }}
-        />
-      </div>
+      {/* ── FOND CSS SIMPLE (monté UNIQUEMENT si la vidéo échoue) ── */}
+      {videoFailed && (
+        <div className="absolute inset-0" aria-hidden="true">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(0,180,255,0.15)_0%,transparent_80%)]" />
+        </div>
+      )}
 
       {/* ── VIDÉO (préchargée silencieusement, fondu-entrant au 1er geste) ── */}
       <video
         ref={videoRef}
+        autoPlay
         loop
         muted
         playsInline
@@ -152,13 +105,8 @@ function MobileLogoScene() {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
 
-        // CORRECTION KALÉIDOSCOPE : le GLB exporte souvent des normales "flat" (1 normale par face).
-        // MatCap échantillonne la texture selon les normales en espace-écran → il faut des normales
-        // lisses (interpolées par vertex) pour que le reflet chrome soit continu et pas fragmenté.
-        if (mesh.geometry) {
-          mesh.geometry.deleteAttribute("normal");
-          mesh.geometry.computeVertexNormals();
-        }
+        // CORRECTION KALÉIDOSCOPE : suppression (le modèle a été mis à jour avec un shade smooth natif Blender)
+        // La ligne mesh.geometry.computeVertexNormals() ruinait le process CPU mobile.
 
         const mat = new THREE.MeshMatcapMaterial({
           matcap,
@@ -256,8 +204,8 @@ export function GlobalCanvas() {
         }}
       >
         <Suspense fallback={null}>
-          <ElectricSmokeLayer isLowEnd={false} />
-          <Logo3DScene isLowEnd={false} />
+          <ElectricSmokeLayer />
+          <Logo3DScene />
         </Suspense>
       </Canvas>
     </div>
@@ -275,7 +223,7 @@ const vertexShader = /* glsl */ `
   }
 `;
 
-const getFragmentShader = (isLowEnd: boolean) => /* glsl */ `
+const fragmentShader = /* glsl */ `
   precision mediump float;
 
   uniform vec2 uResolution;
@@ -284,23 +232,6 @@ const getFragmentShader = (isLowEnd: boolean) => /* glsl */ `
 
   varying vec2 vUv;
 
-  ${isLowEnd ? `
-  // SIMPLIFIED LOW-END HASH/NOISE (Mobile)
-  float hash(vec2 p) {
-      return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-  }
-  float noise(vec2 p) {
-      vec2 i = floor(p); vec2 f = fract(p);
-      f = f * f * (3.0 - 2.0 * f);
-      return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
-                 mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-  }
-  float fbm(vec2 p) {
-      float v = 0.0; float a = 0.5;
-      for (int i = 0; i < 2; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
-      return v;
-  }
-  ` : `
   // HIGH END HASH/NOISE (PC)
   float hash(vec2 p) {
       vec3 p3  = fract(vec3(p.xyx) * 0.1031);
@@ -322,7 +253,6 @@ const getFragmentShader = (isLowEnd: boolean) => /* glsl */ `
       }
       return v;
   }
-  `}
 
   void main() {
       vec2 uv = vUv;
@@ -332,13 +262,6 @@ const getFragmentShader = (isLowEnd: boolean) => /* glsl */ `
       vec2 movement = vec2(uTime * 0.03, uTime * -0.08 + scrollFx);
       vec2 p = uv * 2.2 + movement;
 
-      ${isLowEnd ? `
-      float q = fbm(p + uTime * 0.03);
-      float r = fbm(p + q + uTime * 0.02);
-      float f = fbm(p + r * 0.6);
-      float dx = sin(uv.x * 10.0 + uTime) * 0.1;
-      float eNoise = fbm(uv * 3.5 + vec2(dx, uTime * -0.15));
-      ` : `
       vec2 q = vec2(0.0);
       q.x = fbm(p + vec2(0.0, uTime * 0.03));
       q.y = fbm(p + vec2(1.0, uTime * 0.03));
@@ -349,18 +272,13 @@ const getFragmentShader = (isLowEnd: boolean) => /* glsl */ `
 
       vec2 ep = uv * 3.5 + vec2(uTime * 0.08, uTime * -0.15 + scrollFx * 0.8);
       float eNoise = fbm(ep + r * 1.0 - uTime * 0.3);
-      `}
 
       vec3 darkBlue  = vec3(0.01, 0.015, 0.04);
       vec3 midBlue   = vec3(0.04, 0.08, 0.18);
       vec3 lightBlue = vec3(0.1, 0.2, 0.4);
 
       vec3 color = mix(darkBlue, midBlue, smoothstep(0.1, 0.7, f));
-      ${isLowEnd ? `
-      color = mix(color, lightBlue, smoothstep(0.4, 1.0, f));
-      ` : `
       color = mix(color, lightBlue, smoothstep(0.4, 1.0, f) * smoothstep(0.2, 0.8, r.x));
-      `}
       color *= (f * 1.5 + 0.1);
 
       float ridge = abs(eNoise - 0.5);
@@ -384,7 +302,7 @@ const getFragmentShader = (isLowEnd: boolean) => /* glsl */ `
 // ═══════════════════════════════════════════════════════════════════════════════
 //  SMOKE LAYER (renderOrder: 0, always visible)
 // ═══════════════════════════════════════════════════════════════════════════════
-function ElectricSmokeLayer({ isLowEnd }: { isLowEnd: boolean }) {
+function ElectricSmokeLayer() {
   const matRef = useRef<THREE.ShaderMaterial>(null);
   const { size, viewport } = useThree();
 
@@ -394,7 +312,7 @@ function ElectricSmokeLayer({ isLowEnd }: { isLowEnd: boolean }) {
       uScroll: { value: 0 },
       uResolution: { value: new THREE.Vector2(1, 1) }
     }),
-    [isLowEnd]
+    []
   );
 
   useEffect(() => {
@@ -407,20 +325,17 @@ function ElectricSmokeLayer({ isLowEnd }: { isLowEnd: boolean }) {
     if (!matRef.current) return;
     const u = matRef.current.uniforms;
     
-    // La fumée continue de s'animer dans le temps dans tous les cas
     u.uTime.value = clock.elapsedTime;
-    
-    // Optimisation mobile : désactivation de l'effet de scroll si isLowEnd est true
-    u.uScroll.value = isLowEnd ? 0 : (getScroll() || 0) * 0.0015;
+    u.uScroll.value = (getScroll() || 0) * 0.0015;
   });
 
   return (
     <mesh scale={[viewport.width, viewport.height, 1]} renderOrder={0}>
-      <planeGeometry args={isLowEnd ? [1, 1] : [2, 2]} />
+      <planeGeometry args={[2, 2]} />
       <shaderMaterial
         ref={matRef}
         vertexShader={vertexShader}
-        fragmentShader={getFragmentShader(isLowEnd)}
+        fragmentShader={fragmentShader}
         uniforms={uniforms}
         depthWrite={false}
         depthTest={false}
@@ -470,7 +385,7 @@ function OrbitLight({
   );
 }
 
-function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
+function Logo3DScene() {
   const { scene } = useGLTF("/assets/logo1_draco.glb");
   const clone = useMemo(() => scene.clone(), [scene]);
   const groupRef = useRef<THREE.Group>(null);
@@ -484,33 +399,21 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
     clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh;
-        let mat;
-        
-        if (isLowEnd) {
-          mat = new THREE.MeshStandardMaterial({
-            color: new THREE.Color("#A8B4C8"),
-            metalness: 0.7,
-            roughness: 0.4,
-            transparent: true,
-            opacity: 1,
-          });
-        } else {
-          mat = new THREE.MeshPhysicalMaterial({
-            color: new THREE.Color("#A8B4C8"),
-            metalness: 1.0,
-            roughness: 0.1,
-            envMapIntensity: 3.0,
-            reflectivity: 1.0,
-            clearcoat: 0.4,
-            clearcoatRoughness: 0.08,
-            transparent: true,
-            opacity: 1,
-          });
-        }
+        const mat = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color("#A8B4C8"),
+          metalness: 1.0,
+          roughness: 0.1,
+          envMapIntensity: 3.0,
+          reflectivity: 1.0,
+          clearcoat: 0.4,
+          clearcoatRoughness: 0.08,
+          transparent: true,
+          opacity: 1,
+        });
         
         mesh.material = mat;
-        mesh.castShadow = !isLowEnd;
-        mesh.receiveShadow = !isLowEnd;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
         mats.push(mat as THREE.MeshPhysicalMaterial);
       }
     });
@@ -522,7 +425,7 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
       mats.forEach((m) => m.dispose());
       // FIX: Retrait de mesh.geometry?.dispose() qui détruisait le modèle en mémoire
     };
-  }, [clone, isLowEnd]);
+  }, [clone]);
 
   // Animate rotation + scroll-driven visibility
   useFrame(({ clock }) => {
@@ -551,19 +454,19 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
   return (
     <group ref={containerRef} renderOrder={1}>
       <Float
-        speed={isLowEnd ? 2 : 6}
-        rotationIntensity={isLowEnd ? 0 : 0.4}
-        floatIntensity={isLowEnd ? 0.5 : 1}
+        speed={6}
+        rotationIntensity={0.4}
+        floatIntensity={1}
       >
-        <ambientLight intensity={isLowEnd ? 0.2 : 0.08} />
+        <ambientLight intensity={0.08} />
         <spotLight
           position={[0, 8, 7]}
           angle={0.35}
           penumbra={0.8}
           intensity={80}
           color="#D0E0FF"
-          castShadow={!isLowEnd}
-          shadow-mapSize={isLowEnd ? [512, 512] : [1024, 1024]}
+          castShadow={true}
+          shadow-mapSize={[1024, 1024]}
         />
         <pointLight
           position={[0, -5, 4]}
@@ -572,15 +475,13 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
           distance={15}
         />
 
-        {!isLowEnd && (
-          <spotLight
-            position={[0, 3, -8]}
-            angle={0.5}
-            penumbra={1.0}
-            intensity={30}
-            color="#00A8C8"
-          />
-        )}
+        <spotLight
+          position={[0, 3, -8]}
+          angle={0.5}
+          penumbra={1.0}
+          intensity={30}
+          color="#00A8C8"
+        />
 
         <OrbitLight
           color="#00F2FF"
@@ -591,26 +492,22 @@ function Logo3DScene({ isLowEnd }: { isLowEnd: boolean }) {
           phase={0}
         />
 
-        {!isLowEnd && (
-          <>
-            <OrbitLight
-              color="#C8D8F0"
-              intensity={20}
-              radius={6}
-              speed={0.2}
-              yOffset={-1}
-              phase={Math.PI}
-            />
-            <OrbitLight
-              color="#00F2FF"
-              intensity={15}
-              radius={4}
-              speed={0.55}
-              yOffset={-3}
-              phase={Math.PI * 0.5}
-            />
-          </>
-        )}
+        <OrbitLight
+          color="#C8D8F0"
+          intensity={20}
+          radius={6}
+          speed={0.2}
+          yOffset={-1}
+          phase={Math.PI}
+        />
+        <OrbitLight
+          color="#00F2FF"
+          intensity={15}
+          radius={4}
+          speed={0.55}
+          yOffset={-3}
+          phase={Math.PI * 0.5}
+        />
 
         <group ref={groupRef}>
           <primitive object={clone} scale={5} position={[0,-3, 0]} />
