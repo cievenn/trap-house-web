@@ -3,7 +3,6 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { useDeviceCapabilities } from "@/lib/useDeviceCapabilities";
 
 export function HeroSection() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -12,13 +11,9 @@ export function HeroSection() {
     offset: ["start start", "end start"],
   });
 
-  const { isMobile } = useDeviceCapabilities();
-
   const springConfig = { stiffness: 60, damping: 20, mass: 0.5 };
   const smoothHeroScroll = useSpring(heroScroll, springConfig);
-
-  // Bypass useSpring on mobile for significantly better FPS
-  const activeScroll = isMobile ? heroScroll : smoothHeroScroll;
+  const activeScroll = smoothHeroScroll;
 
   const logoOpacity = useTransform(activeScroll, [0, 0.2], [1, 0]);
   const text1Opacity = useTransform(activeScroll, [0.15, 0.35, 0.5], [0, 1, 0]);

@@ -5,154 +5,11 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, Float, Environment, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { getScroll } from "@/lib/scrollStore";
-import { useDeviceCapabilities } from "@/lib/useDeviceCapabilities"; // Ajout de votre hook
-
-// ═══════════════════════════════════════════════════════════════════════════════
-//  MOBILE VIDEO BACKGROUND — CSS premium → fondu vidéo au 1er geste utilisateur
-// ═══════════════════════════════════════════════════════════════════════════════
-function MobileVideoBackground() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  // videoReady : la vidéo est chargée ET en cours de lecture → on peut l'afficher
-  const [videoReady, setVideoReady] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    // Tentative de lecture immédiate directe
-    video.play().then(() => {
-      setVideoReady(true);
-    }).catch(() => {
-      // Bloqué en mode économie de batterie ou par la politique stricte autoplay
-      setVideoFailed(true); // On affiche alors le CSS simple
-      
-      const unlockOnTouch = () => {
-        video.play().then(() => {
-          setVideoReady(true);
-          setVideoFailed(false); // Retrait du background CSS une fois démarré
-        }).catch(() => {});
-        document.removeEventListener("touchstart", unlockOnTouch);
-        document.removeEventListener("click", unlockOnTouch);
-        document.removeEventListener("scroll", unlockOnTouch);
-      };
-      
-      document.addEventListener("touchstart", unlockOnTouch, { once: true, passive: true });
-      document.addEventListener("click", unlockOnTouch, { once: true });
-      document.addEventListener("scroll", unlockOnTouch, { once: true, passive: true });
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#05050A]">
-
-      {/* ── FOND CSS SIMPLE (monté UNIQUEMENT si la vidéo échoue) ── */}
-      {videoFailed && (
-        <div className="absolute inset-0" aria-hidden="true">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(0,180,255,0.15)_0%,transparent_80%)]" />
-        </div>
-      )}
-
-      {/* ── VIDÉO (préchargée silencieusement, fondu-entrant au 1er geste) ── */}
-      <video
-        ref={videoRef}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[1200ms] ease-in-out"
-        style={{ opacity: videoReady ? 0.65 : 0 }}
-      >
-        <source src="/assets/smoke-background.mp4" type="video/mp4" />
-      </video>
-      
-      {/* Black overlay replacing 'filter: brightness(0.75)' for better GPU performance */}
-      <div 
-        className="absolute inset-0 bg-black/25 pointer-events-none transition-opacity duration-[1200ms] ease-in-out" 
-        style={{ opacity: videoReady ? 1 : 0 }} 
-      />
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-//  MOBILE LOGO SCENE — MatCap only. 0 lumières, 0 Environment, 0 shader lourd.
-//  Fondu de disparition pilotée par le scroll (identique à la version PC).
-// ═══════════════════════════════════════════════════════════════════════════════
-function MobileLogoScene() {
-  const { scene } = useGLTF("/assets/logo1_draco.glb");
-  const clone = useMemo(() => scene.clone(), [scene]);
-  const matcap = useTexture("/assets/matcap-chrome.webp");
-
-  const groupRef = useRef<THREE.Group>(null);
-  const containerRef = useRef<THREE.Group>(null);
-  const createdMaterials = useRef<THREE.MeshMatcapMaterial[]>([]);
-
-  // Configuration texture matcap : filtrage lisse + espace couleur correct
-  useEffect(() => {
-    matcap.minFilter = THREE.LinearFilter;
-    matcap.magFilter = THREE.LinearFilter;
-    matcap.colorSpace = THREE.SRGBColorSpace;
-    matcap.needsUpdate = true;
-  }, [matcap]);
-
-  // Application du matcap sur chaque mesh + recalcul des normales lisses
-  useEffect(() => {
-    const mats: THREE.MeshMatcapMaterial[] = [];
-    clone.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child as THREE.Mesh;
-
-        // CORRECTION KALÉIDOSCOPE : suppression (le modèle a été mis à jour avec un shade smooth natif Blender)
-        // La ligne mesh.geometry.computeVertexNormals() ruinait le process CPU mobile.
-
-        const mat = new THREE.MeshMatcapMaterial({
-          matcap,
-          transparent: true,
-          opacity: 1,
-          flatShading: false, // Force l'interpolation lisse entre les vertex
-        });
-        mesh.material = mat;
-        mats.push(mat);
-      }
-    });
-    createdMaterials.current = mats;
-    return () => mats.forEach((m) => m.dispose());
-  }, [clone, matcap]);
-
-  // Légère oscillation + fondu au scroll (même comportement que sur PC)
-  useFrame(({ clock }) => {
-    if (!groupRef.current || !containerRef.current) return;
-
-    groupRef.current.rotation.y = Math.sin(clock.elapsedTime * 0.25) * 0.08;
-
-    const scrollPx = getScroll() || 0;
-    const opacity = Math.max(0, Math.min(1, 1 - (scrollPx - 100) / 500));
-    containerRef.current.visible = opacity > 0.01;
-
-    createdMaterials.current.forEach((mat) => {
-      mat.opacity = opacity;
-    });
-  });
-
-  return (
-    <group ref={containerRef}>
-      <Float speed={2} rotationIntensity={0} floatIntensity={0.5}>
-        <group ref={groupRef}>
-          <primitive object={clone} scale={5} position={[0, -3, 0]} />
-        </group>
-      </Float>
-    </group>
-  );
-}
 
 useGLTF.preload("/assets/logo1_draco.glb");
 
 export function GlobalCanvas() {
   const [isReady, setIsReady] = useState(false);
-  const { isMobile } = useDeviceCapabilities();
 
   useEffect(() => {
     setIsReady(true);
@@ -161,33 +18,6 @@ export function GlobalCanvas() {
   // SSR / Hydration guard — évite le flash blanc sur le serveur
   if (!isReady) {
     return <div className="fixed inset-0 z-0 bg-[#010101]" />;
-  }
-
-  // ==== MOBILE : vidéo + logo matcap, zéro WebGL lourd ====
-  if (isMobile) {
-    return (
-      <>
-        {/* Fond vidéo */}
-        <MobileVideoBackground />
-        {/* Logo matcap dans son propre canvas — indépendant de la vidéo */}
-        <div className="fixed inset-0 z-[1] pointer-events-none">
-          <Canvas
-            camera={{ position: [0, 0, 9], fov: 45 }}
-            dpr={[0.75, 1]}
-            gl={{
-              alpha: true,       // fond transparent pour voir la vidéo derrière
-              antialias: false,
-              powerPreference: "high-performance",
-              stencil: false,
-            }}
-          >
-            <Suspense fallback={null}>
-              <MobileLogoScene />
-            </Suspense>
-          </Canvas>
-        </div>
-      </>
-    );
   }
 
   // ==== DESKTOP : WebGL complet ====

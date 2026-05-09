@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import { LenisInit } from "@/components/LenisInit";
 import { ScrollOverlays } from "@/components/ScrollOverlays";
-import { useDeviceCapabilities } from "@/lib/useDeviceCapabilities";
 
 // Lazy-load GPU-heavy components — ssr: false
 const CustomCursor = dynamic(
@@ -27,12 +26,10 @@ const GlobalCanvas = dynamic(
  * This allows children sections to benefit from streaming SSR / selective hydration.
  */
 export function ClientShell() {
-  const { isMobile } = useDeviceCapabilities();
-  
   return (
     <>
       <LenisInit />
-      {!isMobile && <CustomCursor />}
+      <CustomCursor />
       <ScrollOverlays />
       <GlobalCanvas />
     </>

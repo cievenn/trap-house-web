@@ -4,7 +4,6 @@ import React, { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import Image from "next/image";
 import { VITRINE_DATA, VitrineCardType } from "@/lib/data";
-import { useDeviceCapabilities } from "@/lib/useDeviceCapabilities";
 
 const VITRINE_BUFFER = 0.10;
 const INTERP_STEPS = 20;
@@ -86,12 +85,9 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
 
 export function VitrineSection() {
   const vitrineRef = useRef<HTMLDivElement>(null);
-  const { isMobile } = useDeviceCapabilities();
   const { scrollYProgress: vitrineScroll } = useScroll({ target: vitrineRef, offset: ["start start", "end end"] });
   const smoothVitrineScroll = useSpring(vitrineScroll, { stiffness: 70, damping: 25, mass: 0.8, restDelta: 0.0001 });
-  
-  // Bypass useSpring on mobile for significantly better FPS
-  const activeScroll = isMobile ? vitrineScroll : smoothVitrineScroll;
+  const activeScroll = smoothVitrineScroll;
 
   const vitrineOpacity = useTransform(activeScroll, [0.9, 1], [1, 0]);
   const vitrineScale = useTransform(activeScroll, [0.9, 1], [1, 0.95]);
