@@ -84,15 +84,5 @@ const CursorInner = () => {
 };
 
 export const CustomCursor = () => {
-  const [isDesktop, setIsDesktop] = React.useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setIsDesktop(window.matchMedia("(pointer: fine)").matches);
-    }
-  }, []);
-
-  if (!isDesktop) return null;
-
   return <CursorInner />;
 };

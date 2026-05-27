@@ -27,7 +27,7 @@ export function VIPSection() {
           <motion.div
             initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1, duration: 0.6 }}
             role="button" tabIndex={0}
-            className="interactive-element relative h-auto min-h-[350px] sm:min-h-[400px] md:h-[550px] flex flex-col items-center justify-center rounded-[2rem] md:rounded-[2.5rem] border border-white/10 md:border-white/5 overflow-hidden group bg-[#020202] shadow-[0_20px_50px_rgba(0,0,0,0.8)] md:hover:border-white/10 transition-all duration-300 active:scale-[0.98] outline-none"
+            className="interactive-element relative h-auto min-h-[350px] sm:min-h-[400px] md:h-[550px] flex flex-col items-center justify-center rounded-[2rem] md:rounded-[2.5rem] border border-white/10 md:border-white/5 overflow-hidden group bg-[#020202] shadow-none md:shadow-[0_20px_50px_rgba(0,0,0,0.8)] md:hover:border-white/10 transition-all duration-300 active:scale-[0.98] outline-none"
           >
             <div className="hidden md:block absolute inset-0 opacity-[0.04] pointer-events-none noise-overlay" />
 
@@ -37,7 +37,7 @@ export function VIPSection() {
             <div className="absolute inset-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_50%_0%,rgba(0,242,255,0.12)_0%,transparent_65%)]" />
 
             <div className="relative z-20 flex flex-col items-center p-6 md:p-10 text-center w-full">
-              <ShoppingBag className="w-10 h-10 md:w-12 md:h-12 text-[#00F2FF] md:text-white/20 mb-6 md:mb-8 md:group-hover:text-[#00F2FF] md:group-hover:scale-110 transition-all duration-500 drop-shadow-[0_0_15px_rgba(0,242,255,0.5)] md:drop-shadow-none md:group-hover:drop-shadow-[0_0_20px_rgba(0,242,255,0.8)]" />
+              <ShoppingBag className="w-10 h-10 md:w-12 md:h-12 text-[#00F2FF] md:text-white/20 mb-6 md:mb-8 md:group-hover:text-[#00F2FF] md:group-hover:scale-110 transition-all duration-500 drop-shadow-none md:group-hover:drop-shadow-[0_0_20px_rgba(0,242,255,0.8)]" />
               <h3 className="text-2xl sm:text-3xl lg:text-3xl xl:text-4xl font-black font-syne text-white tracking-wider md:tracking-widest mb-4 md:mb-6 leading-tight w-full break-words">
                 TRAP HOUSE <br />
                 <span className="text-[#00F2FF] md:text-transparent md:bg-clip-text md:bg-gradient-to-b md:from-white/40 md:to-white/10 md:group-hover:text-[#00F2FF] transition-colors duration-500">SHOP</span>
@@ -63,7 +63,7 @@ export function VIPSection() {
           <motion.div
             initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2, duration: 0.6 }}
             role="button" tabIndex={0}
-            className="interactive-element relative h-auto min-h-[350px] sm:min-h-[400px] md:h-[550px] flex flex-col items-center justify-center rounded-[2rem] md:rounded-[2.5rem] border border-white/10 md:border-white/5 overflow-hidden group bg-[#020202] shadow-[0_20px_50px_rgba(0,0,0,0.8)] md:hover:border-white/10 transition-all duration-300 active:scale-[0.98] outline-none"
+            className="interactive-element relative h-auto min-h-[350px] sm:min-h-[400px] md:h-[550px] flex flex-col items-center justify-center rounded-[2rem] md:rounded-[2.5rem] border border-white/10 md:border-white/5 overflow-hidden group bg-[#020202] shadow-none md:shadow-[0_20px_50px_rgba(0,0,0,0.8)] md:hover:border-white/10 transition-all duration-300 active:scale-[0.98] outline-none"
           >
             <div className="hidden md:block absolute inset-0 opacity-[0.04] pointer-events-none noise-overlay" />
 
@@ -71,7 +71,7 @@ export function VIPSection() {
             <div className="absolute inset-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-1000 bg-[radial-gradient(circle_at_50%_0%,rgba(0,242,255,0.12)_0%,transparent_65%)]" />
 
             <div className="relative z-20 flex flex-col items-center p-6 md:p-10 text-center w-full">
-              <Crown className="w-10 h-10 md:w-12 md:h-12 text-[#00F2FF] md:text-white/20 mb-6 md:mb-8 md:group-hover:text-[#00F2FF] md:group-hover:scale-110 transition-all duration-500 drop-shadow-[0_0_15px_rgba(0,242,255,0.5)] md:drop-shadow-none md:group-hover:drop-shadow-[0_0_20px_rgba(0,242,255,0.8)]" />
+              <Crown className="w-10 h-10 md:w-12 md:h-12 text-[#00F2FF] md:text-white/20 mb-6 md:mb-8 md:group-hover:text-[#00F2FF] md:group-hover:scale-110 transition-all duration-500 drop-shadow-none md:group-hover:drop-shadow-[0_0_20px_rgba(0,242,255,0.8)]" />
               <h3 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black font-syne text-white tracking-wider md:tracking-widest mb-4 md:mb-6 leading-tight">
                 RÉSERVATIONS <span className="text-[#00F2FF] text-glow md:group-hover:text-white transition-colors duration-500">VIP</span>
               </h3>

@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import Image from "next/image";
 import { VITRINE_DATA, VitrineCardType } from "@/lib/data";
 
 const VITRINE_BUFFER = 0.10;
-const INTERP_STEPS = 20;
 
-const StackedCard = ({ src, supertitle, volume, status, description, index, total, progress }: VitrineCardType & { index: number; total: number; progress: any }) => {
+const StackedCard = ({ src, supertitle, volume, status, description, index, total, progress }: VitrineCardType & { index: number; total: number; progress: any; }) => {
+  const INTERP_STEPS = 20;
+  
   const { input, xOut, yOut, scaleOut, rotateZOut, opacityOut, overlayOut, shadowOut } = React.useMemo(() => {
     const inp: number[] = [];
     const xO: string[] = [];
@@ -25,7 +26,6 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
       const depth = index - effective * total;
 
       inp.push(p);
-      // OPTIMISATION MOBILE : 50% de décalage max au lieu de 80% pour ne pas sortir de l'écran
       xO.push(depth < 0 ? `${depth * 50}%` : "0%");
       yO.push(depth < 0 ? `${depth * 250}px` : `${depth * 40}px`);
       sO.push(depth < 0 ? 1 + Math.abs(depth) * 0.3 : Math.max(1 - depth * 0.06, 0.8));
@@ -36,7 +36,7 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
     }
 
     return { input: inp, xOut: xO, yOut: yO, scaleOut: sO, rotateZOut: rO, opacityOut: oO, overlayOut: ovO, shadowOut: shO };
-  }, [index, total]);
+  }, [index, total, INTERP_STEPS]);
 
   const x = useTransform(progress, input, xOut);
   const y = useTransform(progress, input, yOut);
@@ -49,7 +49,7 @@ const StackedCard = ({ src, supertitle, volume, status, description, index, tota
   return (
     <motion.div
       style={{ x, y, scale, rotateZ, opacity, zIndex: total - index }}
-      className="absolute inset-0 origin-center w-full h-full will-change-transform"
+      className={`absolute inset-0 origin-center w-full h-full will-change-transform`}
     >
       <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-[#020202] border border-white/10 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.9)] md:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.9)] flex flex-col justify-end group">
         <div className="absolute inset-0 w-full h-full">
