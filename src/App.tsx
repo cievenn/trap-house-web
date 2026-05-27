@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import Lenis from 'lenis';
 import ScrollProgress from './components/ScrollProgress';
 import CustomCursor from './components/CustomCursor';
+import EnergyBackground from './components/EnergyBackground';
 import Navigation from './components/Navigation';
 import Hero from './components/Hero';
 import Chapter1 from './components/Chapter1';
@@ -57,6 +58,7 @@ function App() {
     <div className="antialiased selection:bg-cyan-500 selection:text-white">
       <ScrollProgress />
       <CustomCursor />
+      <EnergyBackground />
 
       {/* Ambient Lights */}
       <div className="ambient-light"></div>

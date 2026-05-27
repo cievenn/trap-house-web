@@ -7,18 +7,18 @@ export default function Scene3D() {
   return (
     <>
       <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={2} color="#00f0ff" />
-      <directionalLight position={[-5, -5, 5]} intensity={1} color="#ffffff" />
-      
+      <directionalLight position={[5, 5, 5]} intensity={16} color="#00f0ff" />
+      <directionalLight position={[-5, -5, 5]} intensity={10} color="#ffffff" />
+
       <Center>
         <Float
-          speed={2} // Animation speed
-          rotationIntensity={0} // No rotation, just floating
+          speed={5} // Animation speed
+          rotationIntensity={1} // No rotation, just floating
           floatIntensity={1.5} // Up/down float intensity
           floatingRange={[-0.1, 0.1]} // Range of y-axis values the object will float within
         >
           {/* Increased scale for a bigger 3D logo */}
-          <primitive object={scene} scale={1.8} />
+          <primitive object={scene} scale={2.2} />
         </Float>
       </Center>
     </>
@@ -27,4 +27,3 @@ export default function Scene3D() {
 
 // Preload the model
 useGLTF.preload('/logo1.glb');
-

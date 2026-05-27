@@ -154,4 +154,59 @@
       box-shadow: 0 0 20px 2px rgba(0, 240, 255, 0.5), inset 0 0 12px rgba(0, 240, 255, 0.3);
     }
   }
+
+  /* --- NOUVEAU FOND (LIGNES COURBES / ÉNERGIE) --- */
+  .energy-lines-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -99;
+      overflow: hidden;
+      pointer-events: none;
+      background: transparent;
+  }
+
+  .energy-line {
+      position: absolute;
+      width: 200vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      fill: none;
+      stroke: #00f0ff;
+      filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5));
+  }
+  
+  .energy-line path {
+      /* Permet de garder la même épaisseur de ligne peu importe l'étirement de l'écran */
+      vector-effect: non-scaling-stroke;
+  }
+
+  .line-1 {
+      stroke-width: 1.5px;
+      opacity: 0.15;
+      animation: drift 35s linear infinite;
+  }
+
+  .line-2 {
+      stroke-width: 1px;
+      opacity: 0.2;
+      top: 10vh;
+      animation: drift 45s linear infinite reverse;
+  }
+
+  .line-3 {
+      stroke-width: 2px;
+      opacity: 0.1;
+      top: -10vh;
+      animation: drift 55s linear infinite;
+  }
+
+  @keyframes drift {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+  }
 }
+
