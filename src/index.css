@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark: #03070b;
+  --color-dark-lighter: #0a1118;
+  --color-cyan-400: #00f0ff;
+  --color-cyan-500: #00c3ff;
+  --font-display: 'Syncopate', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --tracking-widest: .25em;
+  --tracking-extra-wide: .5em;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-dark);
+    color: white;
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  /* Arrière-plan avec les lumières subtiles */
+  .ambient-light {
+    position: fixed;
+    top: 10%;
+    left: 20%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .ambient-light-2 {
+    position: fixed;
+    bottom: 20%;
+    right: 10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.03) 0%, rgba(0, 0, 0, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Effets de néon cyan */
+  .glow-text-cyan {
+    color: var(--color-cyan-400);
+    text-shadow: 0 0 15px rgba(0, 240, 255, 0.6), 0 0 30px rgba(0, 240, 255, 0.2);
+  }
+
+  .glow-icon-cyan {
+    filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.8));
+  }
+
+  /* Bordures techniques des cartes (Coins) */
+  .tech-corners {
+    position: relative;
+  }
+  .tech-corners::before,
+  .tech-corners::after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border-color: #333;
+    border-style: solid;
+    pointer-events: none;
+  }
+  .tech-corners::before {
+    top: 20px;
+    left: 20px;
+    border-width: 1px 0 0 1px;
+  }
+  .tech-corners::after {
+    bottom: 20px;
+    right: 20px;
+    border-width: 0 1px 1px 0;
+  }
+
+  /* Animation d'apparition au scroll */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 1s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+  .reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Lignes d'énergie en arrière-plan (SVG) */
+  .bg-energy {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0.15;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Animation Marquee (Texte défilant infini) */
+  @keyframes marquee {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 30s linear infinite;
+  }
+
+  /* Curseur dynamique (activé uniquement sur les écrans avec souris) */
+  .custom-cursor {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 999999;
+    box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.9);
+    transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1), height 0.3s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+    will-change: transform;
+  }
+
+  @media (pointer: fine) {
+    * {
+      cursor: none !important;
+    }
+
+    .custom-cursor {
+      display: block;
+    }
+
+    .custom-cursor.hover-active {
+      width: 45px;
+      height: 45px;
+      background-color: rgba(0, 240, 255, 0.08);
+      border: 1px solid var(--color-cyan-400);
+      box-shadow: 0 0 20px 2px rgba(0, 240, 255, 0.5), inset 0 0 12px rgba(0, 240, 255, 0.3);
+    }
+  }
+}
