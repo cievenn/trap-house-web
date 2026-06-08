@@ -22,7 +22,7 @@ export default function Hero() {
           element.scrollIntoView({ behavior: 'smooth' });
         }
       }}>
-        <span className="text-[10px] tracking-widest text-cyan-400 font-display mb-2">SWIPE DOWN</span>
+        <span className="text-[10px] tracking-widest text-cyan-400 font-syne mb-2">SWIPE DOWN</span>
         <ChevronDown className="w-4 h-4 text-cyan-400" />
       </div>
     </header>

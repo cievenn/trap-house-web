@@ -1,9 +1,9 @@
 export default function Chapter1() {
   return (
-    <section id="vision" className="min-h-screen flex flex-col justify-center items-center text-center px-4 py-20 relative">
-      <div className="reveal max-w-4xl">
-        <h4 className="text-cyan-400 text-xs md:text-sm tracking-widest font-display mb-8">CHAPITRE I</h4>
-        <h2 className="font-display font-bold text-4xl md:text-6xl lg:text-7xl leading-tight tracking-wider">
+    <section id="vision" className="min-h-screen flex flex-col justify-center items-center text-center px-6 sm:px-10 md:px-16 py-20 relative overflow-hidden">
+      <div className="reveal w-full max-w-3xl">
+        <h4 className="text-cyan-400 text-xs md:text-sm tracking-widest font-syne font-bold mb-8">CHAPITRE I</h4>
+        <h2 className="font-syne font-extrabold text-3xl sm:text-5xl md:text-6xl leading-tight tracking-normal sm:tracking-wide">
           <span className="text-white block mb-2">OUBLIEZ LES</span>
           <span className="text-white block mb-2">STANDARDS</span>
           <span className="text-gray-500 block">DE LA NUIT.</span>
