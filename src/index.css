@@ -190,7 +190,6 @@
     position: fixed;
     top: 0;
     left: 0;
-    /* 100vw peut causer un overflow sur mobile si la scrollbar est comptée — utiliser 100% */
     width: 100%;
     height: 100%;
     z-index: -99;
@@ -201,15 +200,14 @@
 
   .energy-line {
     position: absolute;
-    /* 200vw est la source du débordement horizontal sur mobile. */
-    /* Les SVG sont contenus dans le wrapper overflow:hidden, on utilise 100% à la place */
-    width: 100%;
+    /* Fix pour l'animation: 200% permet de translater de 50% en boucle fluide sans coupure */
+    width: 200%;
     height: 100%;
     top: 0;
     left: 0;
     fill: none;
     stroke: #00f0ff;
-    filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5));
+    filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.8));
   }
 
   .energy-line path {
@@ -218,30 +216,29 @@
   }
 
   .line-1 {
-    stroke-width: 1.5px;
-    opacity: 0.15;
-    animation: drift 35s linear infinite;
+    stroke-width: 2px;
+    opacity: 0.4;
+    animation: drift 20s linear infinite;
   }
 
   .line-2 {
-    stroke-width: 1px;
-    opacity: 0.2;
+    stroke-width: 1.5px;
+    opacity: 0.5;
     top: 10vh;
-    animation: drift 45s linear infinite reverse;
+    animation: drift 25s linear infinite reverse;
   }
 
   .line-3 {
-    stroke-width: 2px;
-    opacity: 0.1;
+    stroke-width: 2.5px;
+    opacity: 0.3;
     top: -10vh;
-    animation: drift 55s linear infinite;
+    animation: drift 30s linear infinite;
   }
 
   @keyframes drift {
     0% {
       transform: translateX(0);
     }
-
     100% {
       transform: translateX(-50%);
     }
