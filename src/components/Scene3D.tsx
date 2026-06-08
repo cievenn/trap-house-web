@@ -1,23 +1,54 @@
-import { useGLTF, Center, Float } from '@react-three/drei';
+import { useEffect, useMemo } from 'react';
+import { useGLTF, Center, Float, Environment } from '@react-three/drei';
+import * as THREE from 'three';
 
 export default function Scene3D() {
-  // Load the GLTF model (using the one available in public folder)
   const { scene } = useGLTF('/logo1.glb');
+
+  // 1. On crée un SEUL matériau optimisé, mémorisé pour éviter les re-calculs
+  const chromeMaterial = useMemo(() => {
+    return new THREE.MeshStandardMaterial({
+      color: '#ffffff',
+      metalness: 1,
+      roughness: 0.1, // Légèrement monté pour éviter l'aliasing (bruit) sur téléphone
+      envMapIntensity: 2,
+    });
+  }, []);
+
+  useEffect(() => {
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        // 2. IMPORTANT : On nettoie la mémoire en supprimant l'ancien matériau du modèle
+        if (child.material) {
+          child.material.dispose();
+        }
+        // 3. On assigne notre matériau unique partagé
+        child.material = chromeMaterial;
+      }
+    });
+
+    // Optionnel mais recommandé : nettoyer notre matériau custom quand le composant est détruit
+    return () => {
+      chromeMaterial.dispose();
+    };
+  }, [scene, chromeMaterial]);
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={16} color="#00f0ff" />
-      <directionalLight position={[-5, -5, 5]} intensity={10} color="#ffffff" />
+      <ambientLight intensity={0.2} />
+
+      {/* 4. Une seule lumière directionnelle suffit pour la touche de couleur */}
+      <directionalLight position={[5, 5, 5]} intensity={3} color="#00f0ff" />
+
+      <Environment preset="studio" />
 
       <Center>
         <Float
-          speed={5} // Animation speed
-          rotationIntensity={1} // No rotation, just floating
-          floatIntensity={1.5} // Up/down float intensity
-          floatingRange={[-0.1, 0.1]} // Range of y-axis values the object will float within
+          speed={4}
+          rotationIntensity={0.5} // Réduit un peu pour que ça fasse plus "lourd/massif"
+          floatIntensity={1}
+          floatingRange={[-0.1, 0.1]}
         >
-          {/* Increased scale for a bigger 3D logo */}
           <primitive object={scene} scale={2.2} />
         </Float>
       </Center>
@@ -25,5 +56,4 @@ export default function Scene3D() {
   );
 }
 
-// Preload the model
 useGLTF.preload('/logo1.glb');
