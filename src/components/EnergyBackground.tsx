@@ -12,6 +12,7 @@ export default function EnergyBackground() {
           loop
           muted
           playsInline
+          poster="/video-fallback.png"
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src="/video-bc-traphouse.mp4" type="video/mp4" />
@@ -53,9 +54,25 @@ export default function EnergyBackground() {
           <path d="M1000,400 C1500,100 1500,900 2000,400 C2500,100 2500,900 3000,400" />
         </svg>
 
-        {/* Particules lumineuses flottantes pour plus de dynamisme sur mobile */}
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-cyan-400/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-40 h-40 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        {/* Particules lumineuses — SVG radial pré-flouté (pas de filter: blur GPU-killer) */}
+        <svg className="absolute top-1/4 left-1/4 w-32 h-32 animate-glow-pulse" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="glow1">
+              <stop offset="0%" stopColor="rgba(0,240,255,0.25)" />
+              <stop offset="100%" stopColor="rgba(0,240,255,0)" />
+            </radialGradient>
+          </defs>
+          <circle cx="64" cy="64" r="64" fill="url(#glow1)" />
+        </svg>
+        <svg className="absolute bottom-1/3 right-1/4 w-40 h-40 animate-glow-pulse" style={{ animationDelay: '2s' }} viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="glow2">
+              <stop offset="0%" stopColor="rgba(0,200,255,0.25)" />
+              <stop offset="100%" stopColor="rgba(0,200,255,0)" />
+            </radialGradient>
+          </defs>
+          <circle cx="80" cy="80" r="80" fill="url(#glow2)" />
+        </svg>
       </div>
     </>
   );

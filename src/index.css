@@ -243,4 +243,15 @@
       transform: translateX(-50%);
     }
   }
+
+  /* Pulsation douce sur opacité uniquement — zéro coût GPU */
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 4s ease-in-out infinite;
+    will-change: opacity;
+  }
 }

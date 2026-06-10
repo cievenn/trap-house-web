@@ -11,18 +11,13 @@ import Vitrine from './components/Vitrine';
 import Reseaux from './components/Reseaux';
 import VIP from './components/VIP';
 import Footer from './components/Footer';
-import { useReveal } from './hooks/useReveal';
 
 function App() {
-  // Initialize Reveal Animations
-  useReveal();
-
-  // Initialize Lenis Smooth Scroll
+  // Initialize Lenis Smooth Scroll + anchor link delegation
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      // smoothWheel: true, (default is true in latest versions)
     });
 
     function raf(time: number) {
@@ -32,25 +27,24 @@ function App() {
 
     requestAnimationFrame(raf);
 
-    // Gérer les liens de navigation avec Lenis
-    const handleAnchorClick = (e: MouseEvent) => {
-      const target = e.currentTarget as HTMLAnchorElement;
-      const href = target.getAttribute('href');
-      if (href && href.startsWith('#')) {
+    // Délégation d'événement : intercepte TOUS les clics sur des ancres #,
+    // y compris celles ajoutées dynamiquement après le montage.
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest('a[href^="#"]');
+      if (!anchor) return;
+
+      const href = anchor.getAttribute('href');
+      if (href) {
         e.preventDefault();
         lenis.scrollTo(href);
       }
     };
 
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', handleAnchorClick as unknown as EventListener);
-    });
+    document.addEventListener('click', handleClick);
 
     return () => {
+      document.removeEventListener('click', handleClick);
       lenis.destroy();
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.removeEventListener('click', handleAnchorClick as unknown as EventListener);
-      });
     };
   }, []);
 

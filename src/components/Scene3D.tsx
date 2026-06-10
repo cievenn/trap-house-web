@@ -5,39 +5,39 @@ import * as THREE from 'three';
 export default function Scene3D() {
   const { scene } = useGLTF('/logo1.glb');
 
-  // 1. On crée un SEUL matériau optimisé, mémorisé pour éviter les re-calculs
-  const chromeMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: '#ffffff',
-      metalness: 1,
-      roughness: 0.1, // Légèrement monté pour éviter l'aliasing (bruit) sur téléphone
-      envMapIntensity: 2,
-    });
-  }, []);
+  // Clone pour ne jamais muter la scène en cache — safe en multi-instance
+  const clonedScene = useMemo(() => scene.clone(true), [scene]);
 
   useEffect(() => {
-    scene.traverse((child) => {
+    // Créer le matériau à chaque montage — safe en Strict Mode
+    const chromeMaterial = new THREE.MeshStandardMaterial({
+      color: '#ffffff',
+      metalness: 1,
+      roughness: 0.1,
+      envMapIntensity: 2,
+    });
+
+    clonedScene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        // 2. IMPORTANT : On nettoie la mémoire en supprimant l'ancien matériau du modèle
-        if (child.material) {
+        // Nettoyer l'ancien matériau du modèle importé
+        if (child.material && child.material !== chromeMaterial) {
           child.material.dispose();
         }
-        // 3. On assigne notre matériau unique partagé
         child.material = chromeMaterial;
       }
     });
 
-    // Optionnel mais recommandé : nettoyer notre matériau custom quand le composant est détruit
     return () => {
+      // Chaque cycle de montage nettoie sa propre instance — pas de matériau fantôme
       chromeMaterial.dispose();
     };
-  }, [scene, chromeMaterial]);
+  }, [clonedScene]);
 
   return (
     <>
       <ambientLight intensity={0.2} />
 
-      {/* 4. Une seule lumière directionnelle suffit pour la touche de couleur */}
+      {/* Une seule lumière directionnelle suffit pour la touche de couleur */}
       <directionalLight position={[5, 5, 5]} intensity={3} color="#00f0ff" />
 
       <Environment preset="studio" />
@@ -45,11 +45,11 @@ export default function Scene3D() {
       <Center>
         <Float
           speed={4}
-          rotationIntensity={0.5} // Réduit un peu pour que ça fasse plus "lourd/massif"
+          rotationIntensity={0.5}
           floatIntensity={1}
           floatingRange={[-0.1, 0.1]}
         >
-          <primitive object={scene} scale={2.2} />
+          <primitive object={clonedScene} scale={2.2} />
         </Float>
       </Center>
     </>
@@ -57,3 +57,4 @@ export default function Scene3D() {
 }
 
 useGLTF.preload('/logo1.glb');
+

@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import Reveal from './Reveal';
 
 const InstagramIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -39,7 +40,7 @@ export default function Reseaux() {
         </div>
       </div>
 
-      <div className="reveal w-full max-w-7xl flex flex-col items-center relative z-10 px-2">
+      <Reveal className="w-full max-w-7xl flex flex-col items-center relative z-10 px-2">
         
         {/* Titre et Connectivité */}
         <div className="flex items-center space-x-4 mb-8 sm:mb-10">
@@ -82,7 +83,7 @@ export default function Reseaux() {
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-cyan-400 transform group-hover:-rotate-45 transition-all duration-500" />
           </div>
         </a>
-      </div>
+      </Reveal>
     </section>
   );
 }

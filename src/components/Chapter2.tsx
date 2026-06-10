@@ -1,3 +1,5 @@
+import Reveal from './Reveal';
+
 export default function Chapter2() {
   return (
     <section className="min-h-screen flex flex-col justify-center items-center text-center px-6 sm:px-10 md:px-16 py-20 relative overflow-hidden">
@@ -7,7 +9,7 @@ export default function Chapter2() {
         <path d="M0,60 Q35,80 70,60 T100,70" fill="none" stroke="#00f0ff" strokeWidth="0.1" />
       </svg>
 
-      <div className="reveal w-full max-w-4xl relative z-10">
+      <Reveal className="w-full max-w-4xl relative z-10">
         <h4 className="text-cyan-400 text-xs md:text-sm tracking-widest font-syne font-bold mb-8">CHAPITRE II</h4>
         <h2 className="font-syne font-extrabold text-3xl sm:text-5xl md:text-6xl leading-tight tracking-normal sm:tracking-wide">
           <span className="text-white block mb-3">L'ÉNERGIE DE</span>
@@ -15,7 +17,7 @@ export default function Chapter2() {
           <span className="glow-text-cyan block mb-1">L'EXIGENCE DU</span>
           <span className="glow-text-cyan block">PREMIUM.</span>
         </h2>
-      </div>
+      </Reveal>
     </section>
   );
 }
