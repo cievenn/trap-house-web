@@ -37,28 +37,22 @@ export default function CustomCursor() {
     };
     renderCursor();
     
-    // Ajout du style "hover" sur les éléments interactifs
-    const updateInteractiveElements = () => {
-      const interactives = document.querySelectorAll('a, button, .cursor-pointer, .group');
-      interactives.forEach(el => {
-        const htmlEl = el as HTMLElement;
-        if (htmlEl.dataset.cursorAttached !== "true") {
-          htmlEl.dataset.cursorAttached = "true";
-          htmlEl.addEventListener('mouseenter', () => customCursor.classList.add('hover-active'));
-          htmlEl.addEventListener('mouseleave', () => customCursor.classList.remove('hover-active'));
-        }
-      });
+    // Délégation d'événements pour le style "hover" sur les éléments interactifs
+    const handleMouseOverOut = (e: MouseEvent) => {
+      const isInteractive = (e.target as HTMLElement).closest('a, button, .cursor-pointer, .group');
+      if (isInteractive) {
+        customCursor.classList.add('hover-active');
+      } else {
+        customCursor.classList.remove('hover-active');
+      }
     };
-    
-    updateInteractiveElements();
-    
-    const observer = new MutationObserver(() => updateInteractiveElements());
-    observer.observe(document.body, { childList: true, subtree: true });
+
+    document.addEventListener('mouseover', handleMouseOverOut);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseover', handleMouseOverOut);
       cancelAnimationFrame(animationFrameId);
-      observer.disconnect();
     };
   }, []);
 

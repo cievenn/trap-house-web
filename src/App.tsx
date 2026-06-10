@@ -20,12 +20,13 @@ function App() {
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     });
 
+    let rafId: number;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     // Délégation d'événement : intercepte TOUS les clics sur des ancres #,
     // y compris celles ajoutées dynamiquement après le montage.
@@ -44,6 +45,7 @@ function App() {
 
     return () => {
       document.removeEventListener('click', handleClick);
+      cancelAnimationFrame(rafId);
       lenis.destroy();
     };
   }, []);

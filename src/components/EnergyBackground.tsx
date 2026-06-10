@@ -12,7 +12,6 @@ export default function EnergyBackground() {
           loop
           muted
           playsInline
-          poster="/video-fallback.png"
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src="/video-bc-traphouse.mp4" type="video/mp4" />
