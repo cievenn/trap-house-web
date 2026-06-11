@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Reveal from './Reveal';
 
@@ -74,16 +74,62 @@ function ArchiveCard({ archive }: { archive: typeof archives[number] }) {
 export default function Vitrine() {
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  const scrollLeft = useCallback(() => {
-    carouselRef.current?.scrollBy({ left: -400, behavior: 'smooth' });
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = useCallback(() => {
+    if (!carouselRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+    setCanScrollLeft(scrollLeft > 5); // Une petite marge de sécurité
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
   }, []);
 
-  const scrollRight = useCallback(() => {
-    carouselRef.current?.scrollBy({ left: 400, behavior: 'smooth' });
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll]);
+
+  const targetScrollRef = useRef<number | null>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const getScrollAmount = () => {
+    if (!carouselRef.current) return 0;
+    const firstChild = carouselRef.current.firstElementChild as HTMLElement;
+    // On calcule la largeur d'une carte + l'espacement (gap-4 = 16px sur mobile, gap-5 = 20px sur lg)
+    const gap = window.innerWidth < 1024 ? 16 : 20;
+    return firstChild ? firstChild.offsetWidth + gap : 400;
+  };
+
+  const handleScrollClick = useCallback((direction: 'left' | 'right') => {
+    if (!carouselRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+    const amount = getScrollAmount();
+    
+    // On part du scroll actuel ou du scroll cible si une animation est déjà en cours
+    const currentTarget = targetScrollRef.current !== null ? targetScrollRef.current : scrollLeft;
+    
+    let newScroll = direction === 'left' ? currentTarget - amount : currentTarget + amount;
+    
+    // Limitation absolue pour empêcher de scroller dans le vide (overscroll)
+    const maxScroll = scrollWidth - clientWidth;
+    newScroll = Math.max(0, Math.min(newScroll, maxScroll));
+    
+    targetScrollRef.current = newScroll;
+    carouselRef.current.scrollTo({ left: newScroll, behavior: 'smooth' });
+    
+    // On réinitialise la cible après la fin de l'animation
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => {
+      targetScrollRef.current = null;
+    }, 600);
   }, []);
+
+  const scrollLeft = useCallback(() => handleScrollClick('left'), [handleScrollClick]);
+  const scrollRight = useCallback(() => handleScrollClick('right'), [handleScrollClick]);
 
   return (
-    <section id="vitrine" className="min-h-screen py-20 relative flex flex-col justify-center overflow-x-clip" style={{ touchAction: 'pan-y' }}>
+    <section id="vitrine" className="min-h-screen py-20 relative flex flex-col justify-center overflow-x-clip">
 
       {/* ── Layout unifié : CSS Grid responsive ──
            Mobile  → 1 colonne (titre empilé au-dessus du carrousel)
@@ -107,11 +153,16 @@ export default function Vitrine() {
         </div>
 
         {/* ── CARROUSEL (unique, responsive) ── */}
-        <div className="relative overflow-hidden w-full">
+        <div className="relative overflow-hidden w-full group/carousel">
           {/* Bouton Gauche */}
           <button
             onClick={scrollLeft}
-            className="absolute left-0 lg:left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 rounded-full border border-gray-800 bg-[#0a1118]/80 backdrop-blur-md text-gray-400 flex items-center justify-center hover:border-cyan-400 hover:text-cyan-400 lg:hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all duration-300"
+            disabled={!canScrollLeft}
+            className={`absolute left-4 sm:left-6 lg:left-8 xl:left-10 top-1/2 -translate-y-1/2 z-20 w-10 h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 rounded-full border border-gray-800 bg-[#0a1118]/80 backdrop-blur-md flex items-center justify-center transition-all duration-300 ${
+              canScrollLeft 
+                ? 'text-gray-400 hover:border-cyan-400 hover:text-cyan-400 lg:hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] cursor-pointer' 
+                : 'text-gray-700 opacity-0 cursor-default pointer-events-none'
+            }`}
             aria-label="Previous"
           >
             <ChevronLeft className="w-5 h-5 xl:w-6 xl:h-6" />
@@ -120,7 +171,12 @@ export default function Vitrine() {
           {/* Bouton Droite */}
           <button
             onClick={scrollRight}
-            className="absolute right-0 lg:right-8 xl:right-16 top-1/2 -translate-y-1/2 z-20 w-10 h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 rounded-full border border-gray-800 bg-[#0a1118]/80 backdrop-blur-md text-gray-400 flex items-center justify-center hover:border-cyan-400 hover:text-cyan-400 lg:hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] transition-all duration-300"
+            disabled={!canScrollRight}
+            className={`absolute right-0 lg:right-8 xl:right-16 top-1/2 -translate-y-1/2 z-20 w-10 h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 rounded-full border border-gray-800 bg-[#0a1118]/80 backdrop-blur-md flex items-center justify-center transition-all duration-300 ${
+              canScrollRight 
+                ? 'text-gray-400 hover:border-cyan-400 hover:text-cyan-400 lg:hover:shadow-[0_0_20px_rgba(0,240,255,0.3)] cursor-pointer' 
+                : 'text-gray-700 opacity-0 cursor-default pointer-events-none'
+            }`}
             aria-label="Next"
           >
             <ChevronRight className="w-5 h-5 xl:w-6 xl:h-6" />
@@ -129,8 +185,8 @@ export default function Vitrine() {
           {/* Conteneur scrollable unique */}
           <div
             ref={carouselRef}
-            className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 lg:gap-5 px-12 lg:pl-14 lg:pr-8 xl:pr-24 pb-6 lg:pb-8 pt-2 lg:pt-4"
-            style={{ touchAction: 'pan-x' }}
+            onScroll={checkScroll}
+            className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar overscroll-x-contain gap-4 lg:gap-5 px-12 lg:pl-14 lg:pr-8 xl:pr-24 pb-6 lg:pb-8 pt-2 lg:pt-4"
           >
             {archives.map((archive) => (
               <ArchiveCard key={archive.id} archive={archive} />

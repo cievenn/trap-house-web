@@ -1,4 +1,16 @@
+import { useState, useEffect } from 'react';
+
 export default function EnergyBackground() {
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <>
       {/* 
@@ -6,17 +18,19 @@ export default function EnergyBackground() {
         DESKTOP VIDEO BACKGROUND (Hidden on mobile)
         ======================================== 
       */}
-      <div className="fixed inset-0 w-full h-full z-[-99] hidden md:block overflow-hidden bg-dark">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="/video-bc-traphouse.mp4" type="video/mp4" />
-        </video>
-      </div>
+      {isDesktop && (
+        <div className="fixed inset-0 w-full h-full z-[-99] hidden md:block overflow-hidden bg-dark">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          >
+            <source src="/video-bc-traphouse.mp4" type="video/mp4" />
+          </video>
+        </div>
+      )}
 
       {/* 
         ========================================

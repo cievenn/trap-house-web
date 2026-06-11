@@ -19,10 +19,7 @@ export default function Scene3D() {
 
     clonedScene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        // Nettoyer l'ancien matériau du modèle importé
-        if (child.material && child.material !== chromeMaterial) {
-          child.material.dispose();
-        }
+        // Ne SURTOUT PAS dispose l'ancien matériau car il vient du cache useGLTF
         child.material = chromeMaterial;
       }
     });
