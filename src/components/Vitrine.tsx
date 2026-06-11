@@ -8,35 +8,35 @@ const archives = [
     title: 'VOL. 01', 
     status: 'CLASSIFIED', 
     desc: 'L\'apogée de l\'énergie underground. Une nuit classée secret défense où les règles ont été réécrites.', 
-    img: 'https://images.unsplash.com/photo-1574391884720-bbc3740c59d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' 
+    img: '/video-fallback.webp' 
   },
   { 
     id: '02', 
     title: 'VOL. 02', 
     status: 'ARCHIVED', 
     desc: 'Résonance industrielle. Les murs tremblent encore de cette session brutale et sans concession.', 
-    img: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' 
+    img: '/video-fallback.webp' 
   },
   { 
     id: '03', 
     title: 'VOL. 03', 
     status: 'LEAKED', 
     desc: 'Des fréquences inexplorées. Le point de bascule de notre mouvement vers l\'avant-garde.', 
-    img: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' 
+    img: '/video-fallback.webp' 
   },
   { 
     id: '04', 
     title: 'VOL. 04', 
     status: 'REDACTED', 
     desc: 'Un chaos organisé. La fusion parfaite entre l\'ombre, la lumière et l\'énergie pure.', 
-    img: 'https://images.unsplash.com/photo-1545128485-c400e7702796?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' 
+    img: '/video-fallback.webp' 
   },
   { 
     id: '05', 
     title: 'VOL. 05', 
     status: 'UPCOMING', 
     desc: 'Préparez-vous. Le prochain chapitre s\'écrira dans le sang, les basses et les néons.', 
-    img: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' 
+    img: '/video-fallback.webp' 
   },
 ];
 
@@ -91,7 +91,7 @@ export default function Vitrine() {
   }, [checkScroll]);
 
   const targetScrollRef = useRef<number | null>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const getScrollAmount = () => {
     if (!carouselRef.current) return 0;

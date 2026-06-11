@@ -25,6 +25,7 @@ export default function EnergyBackground() {
             loop
             muted
             playsInline
+            preload="none"
             poster="/video-fallback.webp"
             className="absolute inset-0 w-full h-full object-cover"
           >

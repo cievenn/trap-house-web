@@ -56,7 +56,7 @@ export default function Reseaux() {
         </h2>
 
         {/* Bouton Instagram (Allongé) */}
-        <a href="https://www.instagram.com/bigtraphouse.events/" target="_blank" className="group relative flex items-center justify-between w-full max-w-[560px] bg-[#05090e]/95 backdrop-blur-md border border-gray-800/80 rounded-[2.5rem] p-3 sm:p-4 pr-5 sm:pr-6 hover:border-cyan-400/60 hover:shadow-[0_0_40px_rgba(0,240,255,0.15)] transition-all duration-500 overflow-hidden">
+        <a href="https://www.instagram.com/bigtraphouse.events/" target="_blank" rel="noopener noreferrer" className="group relative flex items-center justify-between w-full max-w-[560px] bg-[#05090e]/95 backdrop-blur-md border border-gray-800/80 rounded-[2.5rem] p-3 sm:p-4 pr-5 sm:pr-6 hover:border-cyan-400/60 hover:shadow-[0_0_40px_rgba(0,240,255,0.15)] transition-all duration-500 overflow-hidden">
           
           {/* Lueur de fond au survol */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>

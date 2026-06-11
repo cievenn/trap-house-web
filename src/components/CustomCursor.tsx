@@ -21,7 +21,7 @@ export default function CustomCursor() {
       clientY = e.clientY;
     };
     
-    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
     
     let animationFrameId: number;
     
@@ -47,7 +47,7 @@ export default function CustomCursor() {
       }
     };
 
-    document.addEventListener('mouseover', handleMouseOverOut);
+    document.addEventListener('mouseover', handleMouseOverOut, { passive: true });
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);

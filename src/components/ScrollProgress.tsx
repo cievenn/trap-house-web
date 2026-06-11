@@ -21,7 +21,7 @@ export default function ScrollProgress() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Init
 
     return () => {
