@@ -1,7 +1,8 @@
-import { Suspense } from 'react';
+import { Suspense, lazy } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { ChevronDown } from 'lucide-react';
-import Scene3D from './Scene3D';
+
+const Scene3D = lazy(() => import('./Scene3D'));
 
 export default function Hero() {
   return (

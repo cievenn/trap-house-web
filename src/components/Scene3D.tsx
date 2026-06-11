@@ -3,6 +3,8 @@ import { useGLTF, Center, Float, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
 export default function Scene3D() {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   const { scene } = useGLTF('/logo1.glb');
 
   // Clone pour ne jamais muter la scène en cache — safe en multi-instance
@@ -37,7 +39,7 @@ export default function Scene3D() {
       {/* Une seule lumière directionnelle suffit pour la touche de couleur */}
       <directionalLight position={[5, 5, 5]} intensity={3} color="#00f0ff" />
 
-      <Environment preset="studio" />
+      {!isMobile && <Environment preset="studio" />}
 
       <Center>
         <Float
@@ -53,5 +55,5 @@ export default function Scene3D() {
   );
 }
 
-useGLTF.preload('/logo1.glb');
+useGLTF.preload('/logo1opti.glb');
 
