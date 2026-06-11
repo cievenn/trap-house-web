@@ -1,4 +1,4 @@
-import { useEffect, Suspense, lazy } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import Lenis from 'lenis';
 import ScrollProgress from './components/ScrollProgress';
 import CustomCursor from './components/CustomCursor';
@@ -6,6 +6,7 @@ import EnergyBackground from './components/EnergyBackground';
 import Navigation from './components/Navigation';
 import Hero from './components/Hero';
 
+// Composants différés (Lazy Load) pour alléger le JS initial
 const Chapter1 = lazy(() => import('./components/Chapter1'));
 const Chapter2 = lazy(() => import('./components/Chapter2'));
 const Vitrine = lazy(() => import('./components/Vitrine'));
@@ -63,7 +64,6 @@ function App() {
 
       <Navigation />
       <Hero />
-      
       <Suspense fallback={null}>
         <Chapter1 />
         <Chapter2 />

@@ -1,11 +1,16 @@
 import { useEffect, useMemo } from 'react';
+import { useThree } from '@react-three/fiber';
 import { useGLTF, Center, Float, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
 export default function Scene3D() {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
   const { scene } = useGLTF('/logo1.glb');
+  const { viewport } = useThree();
+
+  const isMobile = viewport.width < 4.5;
+  // Si on est sur mobile, on réduit l'échelle et on le remonte (axe Y positif) pour le recentrer visuellement
+  const logoScale = isMobile ? 1.5 : 2.2;
+  const logoPositionY = isMobile ? 0.5 : 0;
 
   // Clone pour ne jamais muter la scène en cache — safe en multi-instance
   const clonedScene = useMemo(() => scene.clone(true), [scene]);
@@ -39,21 +44,22 @@ export default function Scene3D() {
       {/* Une seule lumière directionnelle suffit pour la touche de couleur */}
       <directionalLight position={[5, 5, 5]} intensity={3} color="#00f0ff" />
 
-      {!isMobile && <Environment preset="studio" />}
+      {/* On remet l'HDR "studio" pour un rendu métal réaliste, son poids n'est plus un problème grâce au Lazy Loading */}
+      <Environment preset="studio" />
 
-      <Center>
+      <Center position={[0, logoPositionY, 0]}>
         <Float
           speed={4}
           rotationIntensity={0.5}
           floatIntensity={1}
           floatingRange={[-0.1, 0.1]}
         >
-          <primitive object={clonedScene} scale={2.2} />
+          <primitive object={clonedScene} scale={logoScale} />
         </Float>
       </Center>
     </>
   );
 }
 
-useGLTF.preload('/logo1opti.glb');
+useGLTF.preload('/logo1.glb');
 

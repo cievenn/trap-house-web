@@ -1,19 +1,17 @@
-import { Suspense, lazy } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { lazy, Suspense } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const Scene3D = lazy(() => import('./Scene3D'));
+// Lazy loading du Canvas Three.js pour ne pas bloquer le Main Thread
+const Hero3D = lazy(() => import('./Hero3D'));
 
 export default function Hero() {
   return (
     <header className="relative w-full h-screen flex flex-col justify-end items-center pb-12 overflow-hidden">
       {/* Conteneur Three.js via R3F */}
       <div className="absolute top-0 left-0 w-full h-full z-10">
-        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 5], fov: 45 }}>
-          <Suspense fallback={null}>
-            <Scene3D />
-          </Suspense>
-        </Canvas>
+        <Suspense fallback={null}>
+          <Hero3D />
+        </Suspense>
       </div>
       
       {/* Indicateur de scroll */}
