@@ -1,9 +1,70 @@
+import { useState } from 'react';
+import { X } from 'lucide-react';
+
 export default function Footer() {
+  const [showLegal, setShowLegal] = useState(false);
+
   return (
-    <footer className="border-t border-gray-900 py-8 text-center px-4">
-      <p className="font-manrope text-[10px] tracking-widest text-gray-600">
-        © 2026 TRAP HOUSE. TOUS DROITS RÉSERVÉS.
-      </p>
-    </footer>
+    <>
+      <footer className="border-t border-gray-900 py-8 text-center px-4 relative z-10">
+        <div className="font-manrope text-[10px] tracking-widest text-gray-600 flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-6">
+          <span>© 2026 TRAP HOUSE. TOUS DROITS RÉSERVÉS.</span>
+          <button 
+            onClick={() => setShowLegal(true)}
+            className="hover:text-white transition-colors underline decoration-gray-800 underline-offset-4"
+          >
+            Mentions Légales & Confidentialité
+          </button>
+        </div>
+      </footer>
+
+      {showLegal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-gray-950 border border-gray-800 p-6 sm:p-10 max-w-3xl w-full rounded-2xl relative my-8 text-left">
+            <button 
+              onClick={() => setShowLegal(false)}
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 text-gray-500 hover:text-white transition-colors"
+            >
+              <X size={24} />
+            </button>
+            
+            <div className="font-manrope text-sm text-gray-300 space-y-8 mt-2">
+              <h2 className="text-xl sm:text-2xl font-outfit font-bold text-white mb-8">MENTIONS LÉGALES ET POLITIQUE DE CONFIDENTIALITÉ</h2>
+              
+              <section>
+                <h3 className="text-white font-bold mb-2">1. Éditeur du site</h3>
+                <p className="leading-relaxed">Le site Trap House est édité par :<br/>
+                [Prénom et Nom du client]<br/>
+                Statut : [Entreprise en cours d'immatriculation.]<br/>
+                Adresse : [Adresse à Dijon]<br/>
+                Contact : [Email du client]</p>
+              </section>
+
+              <section>
+                <h3 className="text-white font-bold mb-2">2. Directeur de la publication</h3>
+                <p className="leading-relaxed">[Prénom et Nom du client]</p>
+              </section>
+
+              <section>
+                <h3 className="text-white font-bold mb-2">3. Hébergement</h3>
+                <p className="leading-relaxed">Le site est hébergé par :<br/>
+                Vercel Inc.<br/>
+                440 N Barranca Ave #4133, Covina, CA 91723, États-Unis</p>
+              </section>
+
+              <section>
+                <h3 className="text-white font-bold mb-2">4. Création du site</h3>
+                <p className="leading-relaxed">Site conçu et développé par : SRW Studio</p>
+              </section>
+
+              <section>
+                <h3 className="text-white font-bold mb-2">5. Données personnelles (RGPD)</h3>
+                <p className="leading-relaxed">Le site Trap House n'utilise pas de cookies de traçage publicitaire. Si vous nous contactez par e-mail, vos coordonnées ne seront utilisées que pour vous répondre et ne seront jamais revendues. Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données en nous contactant à [Email du client].</p>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
