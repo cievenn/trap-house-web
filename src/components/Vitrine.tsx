@@ -5,38 +5,38 @@ import Reveal from './Reveal';
 const archives = [
   { 
     id: '01', 
-    title: 'VOL. 01', 
-    status: 'CLASSIFIED', 
-    desc: 'L\'apogée de l\'énergie underground. Une nuit classée secret défense où les règles ont été réécrites.', 
-    img: '/video-fallback.webp' 
+    title: 'AMERICAN DREAM', 
+    status: '13-06-26', 
+    desc: 'Le Be Smart à Dijon accueille la toute première édition de Trap House. Une nuit rythmée par le meilleur du RNB, du Rap, de la Trap et de la Pop Urbaine US, dans une ambiance inspirée de la culture hip-hop américaine. Dress code optionnel, mais les meilleurs outfits sont les bienvenus.', 
+    img: '/AMERICAN_DREAM.webp'
   },
   { 
     id: '02', 
     title: 'VOL. 02', 
-    status: 'ARCHIVED', 
-    desc: 'Résonance industrielle. Les murs tremblent encore de cette session brutale et sans concession.', 
-    img: '/video-fallback.webp' 
+    status: 'COMING SOON', 
+    desc: 'Une nouvelle édition est en préparation. Plus d’infos bientôt.', 
+    img: '/image-attente.webp' 
   },
   { 
     id: '03', 
     title: 'VOL. 03', 
-    status: 'LEAKED', 
-    desc: 'Des fréquences inexplorées. Le point de bascule de notre mouvement vers l\'avant-garde.', 
-    img: '/video-fallback.webp' 
+    status: 'COMING SOON', 
+    desc: 'La suite de Trap House est en cours de développement.', 
+    img: '/image-attente.webp' 
   },
   { 
     id: '04', 
     title: 'VOL. 04', 
-    status: 'REDACTED', 
-    desc: 'Un chaos organisé. La fusion parfaite entre l\'ombre, la lumière et l\'énergie pure.', 
-    img: '/video-fallback.webp' 
+    status: 'COMING SOON', 
+    desc: 'De nouvelles dates arrivent prochainement.', 
+    img: '/image-attente.webp' 
   },
   { 
     id: '05', 
     title: 'VOL. 05', 
-    status: 'UPCOMING', 
-    desc: 'Préparez-vous. Le prochain chapitre s\'écrira dans le sang, les basses et les néons.', 
-    img: '/video-fallback.webp' 
+    status: 'COMING SOON', 
+    desc: 'Le projet Trap House continue d’évoluer. Restez connectés.', 
+    img: '/image-attente.webp' 
   },
 ];
 
@@ -54,16 +54,17 @@ function ArchiveCard({ archive }: { archive: typeof archives[number] }) {
         style={{ backgroundImage: `url('${archive.img}')` }}
       ></div>
       <div className="absolute inset-0 bg-gradient-to-t from-[#03070b] via-[#03070b]/60 to-transparent"></div>
+
+      {/* Status in top right corner */}
+      <div className="absolute top-6 right-6 lg:top-8 lg:right-8 z-20 text-right">
+        <span className="block text-gray-500 text-[8px] font-syne font-bold tracking-widest mb-1 shadow-black drop-shadow-md">STATUS</span>
+        <span className="block text-cyan-400 text-[9px] lg:text-[10px] font-syne font-bold tracking-widest shadow-black drop-shadow-md">{archive.status}</span>
+      </div>
+
       <div className="relative z-10 w-full lg:transform lg:group-hover:-translate-y-2 transition-transform duration-500">
-        <div className="flex justify-between items-end border-b border-gray-700 pb-3 lg:pb-4 mb-3 lg:mb-4 group-hover:border-cyan-400/50 transition-colors duration-500">
-          <div>
-            <h4 className="text-cyan-400 text-[10px] tracking-widest font-syne font-bold mb-1 lg:mb-2">ARCHIVE</h4>
-            <h3 className="font-syne font-extrabold text-2xl lg:text-3xl xl:text-4xl text-white tracking-wide group-hover:text-cyan-400 transition-colors duration-300">{archive.title}</h3>
-          </div>
-          <div className="text-right">
-            <span className="block text-gray-500 text-[8px] font-syne font-bold tracking-widest mb-1">STATUS</span>
-            <span className="block text-cyan-400 text-[9px] lg:text-[10px] font-syne font-bold tracking-widest">{archive.status}</span>
-          </div>
+        <div className="border-b border-gray-700 pb-3 lg:pb-4 mb-3 lg:mb-4 group-hover:border-cyan-400/50 transition-colors duration-500">
+          <h4 className="text-cyan-400 text-[10px] tracking-widest font-syne font-bold mb-1 lg:mb-2">ARCHIVE</h4>
+          <h3 className="font-syne font-extrabold text-2xl lg:text-3xl xl:text-4xl text-white tracking-wide group-hover:text-cyan-400 transition-colors duration-300">{archive.title}</h3>
         </div>
         <p className="text-gray-400 text-xs lg:text-sm font-manrope leading-relaxed opacity-80 lg:group-hover:opacity-100 transition-opacity duration-300">{archive.desc}</p>
       </div>

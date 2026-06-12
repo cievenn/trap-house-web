@@ -12,10 +12,10 @@ export default function Chapter2() {
       <Reveal className="w-full max-w-4xl relative z-10">
         <h4 className="text-cyan-400 text-xs md:text-sm tracking-widest font-syne font-bold mb-8">CHAPITRE II</h4>
         <h2 className="font-syne font-extrabold text-3xl sm:text-5xl md:text-6xl leading-tight tracking-normal sm:tracking-wide">
-          <span className="text-white block mb-3">L'ÉNERGIE DE</span>
-          <span className="text-white block mb-3">L'UNDERGROUND.</span>
-          <span className="glow-text-cyan block mb-1">L'EXIGENCE DU</span>
-          <span className="glow-text-cyan block">PREMIUM.</span>
+          <span className="text-white block mb-3">UNE ÉNERGIE</span>
+          <span className="text-white block mb-3">PLUS BRUTE</span>
+          <span className="glow-text-cyan block mb-1">UNE MOMENT</span>
+          <span className="glow-text-cyan block">PLUS PROPRE.</span>
         </h2>
       </Reveal>
     </section>
