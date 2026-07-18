@@ -7,20 +7,23 @@ const archives = [
     id: '01', 
     title: 'AMERICAN DREAM', 
     status: '13-06-26', 
-    desc: 'Le Be Smart à Dijon accueille la toute première édition de Trap House. Une nuit rythmée par le meilleur du RNB, du Rap, de la Trap et de la Pop Urbaine US, dans une ambiance inspirée de la culture hip-hop américaine. Dress code optionnel, mais les meilleurs outfits sont les bienvenus.', 
+    archives: 'ARCHIVE',
+    desc: 'Le Smart à Dijon accueille la première édition de Trap House. Une nuit rythmée par le meilleur du RNB, du Rap, de la Trap et de la Pop Urbaine US, dans une ambiance inspirée de la culture hip-hop américaine. Dress code optionnel, mais les meilleurs outfits sont attendus.', 
     img: '/AMERICAN_DREAM.webp'
   },
   { 
     id: '02', 
-    title: 'VOL. 02', 
-    status: 'COMING SOON', 
-    desc: 'Une nouvelle édition est en préparation. Plus d’infos bientôt.', 
-    img: '/image-attente.webp' 
+    title: 'WHITE PARTY', 
+    status: '01-08-26', 
+    archives: 'PROCHAINEMENT',
+    desc: 'Le Beverly à Dijon (11 avenue du Drapeau) vous attend le samedi 01 août 2026 dès 23h00 pour une nuit 100% urbaine ! Vibrez sur le meilleur du Rap, de la Trap, RNB et Pop Urbaine US. Préparez vos plus belles tenues, le dress code 100% blanc est exigé pour briller sur la piste !', 
+    img: '/WHITE_PARTY.webp' 
   },
   { 
     id: '03', 
     title: 'VOL. 03', 
     status: 'COMING SOON', 
+    archives: '???',
     desc: 'La suite de Trap House est en cours de développement.', 
     img: '/image-attente.webp' 
   },
@@ -28,6 +31,7 @@ const archives = [
     id: '04', 
     title: 'VOL. 04', 
     status: 'COMING SOON', 
+    archives: '???',
     desc: 'De nouvelles dates arrivent prochainement.', 
     img: '/image-attente.webp' 
   },
@@ -35,6 +39,7 @@ const archives = [
     id: '05', 
     title: 'VOL. 05', 
     status: 'COMING SOON', 
+    archives: '???',
     desc: 'Le projet Trap House continue d’évoluer. Restez connectés.', 
     img: '/image-attente.webp' 
   },
@@ -63,8 +68,8 @@ function ArchiveCard({ archive }: { archive: typeof archives[number] }) {
 
       <div className="relative z-10 w-full lg:transform lg:group-hover:-translate-y-2 transition-transform duration-500">
         <div className="border-b border-gray-700 pb-3 lg:pb-4 mb-3 lg:mb-4 group-hover:border-cyan-400/50 transition-colors duration-500">
-          <h4 className="text-cyan-400 text-[10px] tracking-widest font-syne font-bold mb-1 lg:mb-2">ARCHIVE</h4>
-          <h3 className="font-syne font-extrabold text-2xl lg:text-3xl xl:text-4xl text-white tracking-wide group-hover:text-cyan-400 transition-colors duration-300">{archive.title}</h3>
+          <h4 className="text-cyan-400 text-[10px] tracking-widest font-syne font-bold mb-1 lg:mb-2">{archive.archives}</h4>
+          <h3 className="font-syne font-extrabold text-2xl lg:text-3xl xl:text-4xl text-white tracking-wide group-hover:text-cyan-400 transition-colors duration-300">{archive.status}</h3>
         </div>
         <p className="text-gray-400 text-xs lg:text-sm font-manrope leading-relaxed opacity-80 lg:group-hover:opacity-100 transition-opacity duration-300">{archive.desc}</p>
       </div>

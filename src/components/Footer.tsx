@@ -11,7 +11,7 @@ export default function Footer() {
           <span>© 2026 TRAP HOUSE. TOUS DROITS RÉSERVÉS.</span>
           <button 
             onClick={() => setShowLegal(true)}
-            className="hover:text-white transition-colors underline decoration-gray-800 underline-offset-4"
+            className="hover:text-white transition-colors underline-offset-4"
           >
             Mentions Légales & Confidentialité
           </button>
@@ -34,15 +34,15 @@ export default function Footer() {
               <section>
                 <h3 className="text-white font-bold mb-2">1. Éditeur du site</h3>
                 <p className="leading-relaxed">Le site Trap House est édité par :<br/>
-                [Prénom et Nom du client]<br/>
-                Statut : [Entreprise en cours d'immatriculation.]<br/>
-                Adresse : [Adresse à Dijon]<br/>
-                Contact : [Email du client]</p>
+                Anthony Moreira<br/>
+                Statut : Micro-Entreprise<br/>
+                Adresse : 28 Rue Du Bourg, 21000 Dijon<br/>
+                Contact : a.moreira1503@gmail.com</p>
               </section>
 
               <section>
                 <h3 className="text-white font-bold mb-2">2. Directeur de la publication</h3>
-                <p className="leading-relaxed">[Prénom et Nom du client]</p>
+                <p className="leading-relaxed">Anthony Moreira</p>
               </section>
 
               <section>
@@ -59,7 +59,7 @@ export default function Footer() {
 
               <section>
                 <h3 className="text-white font-bold mb-2">5. Données personnelles (RGPD)</h3>
-                <p className="leading-relaxed">Le site Trap House n'utilise pas de cookies de traçage publicitaire. Si vous nous contactez par e-mail, vos coordonnées ne seront utilisées que pour vous répondre et ne seront jamais revendues. Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données en nous contactant à [Email du client].</p>
+                <p className="leading-relaxed">Le site Trap House n'utilise pas de cookies de traçage publicitaire. Si vous nous contactez par e-mail, vos coordonnées ne seront utilisées que pour vous répondre et ne seront jamais revendues. Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données en nous contactant à a.moreira1503@gmail.com.</p>
               </section>
             </div>
           </div>
