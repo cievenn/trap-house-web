@@ -69,7 +69,7 @@ function ArchiveCard({ archive }: { archive: typeof archives[number] }) {
       <div className="relative z-10 w-full lg:transform lg:group-hover:-translate-y-2 transition-transform duration-500">
         <div className="border-b border-gray-700 pb-3 lg:pb-4 mb-3 lg:mb-4 group-hover:border-cyan-400/50 transition-colors duration-500">
           <h4 className="text-cyan-400 text-[10px] tracking-widest font-syne font-bold mb-1 lg:mb-2">{archive.archives}</h4>
-          <h3 className="font-syne font-extrabold text-2xl lg:text-3xl xl:text-4xl text-white tracking-wide group-hover:text-cyan-400 transition-colors duration-300">{archive.status}</h3>
+          <h3 className="font-syne font-extrabold text-2xl lg:text-3xl xl:text-4xl text-white tracking-wide group-hover:text-cyan-400 transition-colors duration-300">{archive.title}</h3>
         </div>
         <p className="text-gray-400 text-xs lg:text-sm font-manrope leading-relaxed opacity-80 lg:group-hover:opacity-100 transition-opacity duration-300">{archive.desc}</p>
       </div>
