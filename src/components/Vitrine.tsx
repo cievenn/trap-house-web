@@ -153,7 +153,7 @@ export default function Vitrine() {
             </h2>
             <div className="w-12 h-0.5 bg-cyan-400 mb-5 glow-icon-cyan"></div>
             <p className="text-gray-400 text-sm font-manrope leading-relaxed max-w-sm lg:max-w-xs">
-              Glissez à travers l'obscurité pour découvrir les archives classées de nos événements légendaires. Seuls les initiés savent.
+              Glissez à travers l'obscurité pour découvrir les archives classées et à venir de nos événements légendaires. Seuls les initiés savent.
             </p>
           </Reveal>
         </div>
